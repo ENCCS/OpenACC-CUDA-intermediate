@@ -1,22 +1,13 @@
-LESSON NAME
-===========
-
-Intro
-
-
+Intermediate OpenACC/CUDA
+=========================
 
 .. prereq::
 
-   prerequisites
-
-
-
-.. csv-table::
-   :widths: auto
-   :delim: ;
-
-   20 min ; :doc:`filename`
-
+   Before attending this workshop, please make sure that you have
+   access to an HPC cluster with Nvidia GPUs and the PGI compiler.
+   Alternatively, you can use a cloud service like Google Colab which
+   offers access to GPUs in the cloud. See the :ref:`setup` section
+   for further details.
 
 .. toctree::
    :maxdepth: 1
@@ -37,23 +28,89 @@ Intro
 Who is the course for?
 ----------------------
 
+This course is for students, researchers, engineers and programmers who would like to expand their knowledge of OpenACC and CUDA.
+Some previous experience with C/C++ is required, basic knowledge of OpenACC/CUDA will help to follow the materal.
 
+The lesson furthermore assumes that participants have some familiarity with the following topics:
 
+- Logging in to supercomputers and using a bash terminal
+- Compiling C/C++ or Fortran codes using compilers and makefiles
 
+Tentative schedule
+------------------
+
+.. list-table::
+   :widths: 25 50
+   :header-rows: 1
+
+   * - Day 1
+     -
+   * - 9:00 -  9:10
+     - Introduction to ENCCS
+   * - 9:10 -  9:30
+     - Introduction to GPUs
+   * - 9:10 -  9:40 
+     - OpenACC:
+   * - 9:40 -  9:50
+     - Break
+   * - 9:50 - 10:20
+     - OpenACC:
+   * - 10:20 - 10:30
+     - Break-out rooms
+   * - 10:30 - 10:40
+     - Break
+   * - 10:40 - 11:00
+     - Wrap-up for OpenACC
+   * - 11:30 - 12:30
+     - CUDA: Parallel reduction use-case
+
+.. list-table::
+   :widths: 25 50
+   :header-rows: 1
+
+   * - Day 2
+     -
+   * - 9:00 -  9:10
+     - Follow-ups from day 1
+   * - 9:10 -  9:50
+     - CUDA: Optimizing the reduction kernel
+   * - 9:50 - 10:10
+     - Break-out rooms
+   * - 10:10 - 10:20
+     - Break
+   * - 10:20 - 11:00
+     - CUDA: Exploring task-based parallelizm: streams and events
+   * - 11:00 - 11:20
+     - Break-out rooms
+   * - 11:20 - 11:30
+     - Break
+   * - 11:30 - 11:50
+     - CUDA: Notes on profiling tools
+   * - 11:50 - 12:00
+     - Wrap-up
 
 About the course
 ----------------
 
+These course materials are developed for those who have the understanding of fundamentals of OpenACC and CUDA and would like to expand their knowledge.
+The course consists of lectures, type-along and hands-on sessions.
 
+CUDA lectures cover two main topics: how to optimize computational kernels for effitient execution on GPU hardware and how to explore the task-based parallelizm using streams and events.
+We will also briefly go through profiling tools that can help one to identify the computational bottleneck of the programm.
 
+The participants are assumed to have knowledge of C programming languages.
+Since participants will be using HPC clusters to run the examples, fluent operation in a Linux/Unix environment is assumed.
 
-
+We encourage people without prior knowledge of OpenACC and CUDA to go through our introductory course.
+The materials are avaliable online at https://enccs.github.io/OpenACC-CUDA-beginners/ .
 
 See also
 --------
 
-
-
+ - Our `introductory materials <https://enccs.github.io/OpenACC-CUDA-beginners/>`_
+ - Official `OpenACC site <https://www.openacc.org/>`_
+ - `Nvidia Deep Learning institute <https://www.nvidia.com/en-us/training/>`_ 
+ - `CSC training resources on OpenACC <https://github.com/csc-training/openacc/>`_
 
 
 Credits
