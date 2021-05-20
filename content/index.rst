@@ -29,7 +29,7 @@ Who is the course for?
 ----------------------
 
 This course is for students, researchers, engineers and programmers who would like to expand their knowledge of OpenACC and CUDA.
-Some previous experience with C/C++ is required, basic knowledge of OpenACC/CUDA will help to follow the materal.
+Some previous experience with C/C++ is required, basic knowledge of OpenACC/CUDA will help to follow the material.
 
 The lesson furthermore assumes that participants have some familiarity with the following topics:
 
@@ -40,7 +40,7 @@ Tentative schedule
 ------------------
 
 .. list-table::
-   :widths: 25 50
+   :widths: 25 70
    :header-rows: 1
 
    * - Day 1
@@ -49,18 +49,18 @@ Tentative schedule
      - Introduction to ENCCS
    * - 9:10 -  9:30
      - Introduction to GPUs
-   * - 9:10 -  9:40 
-     - OpenACC:
-   * - 9:40 -  9:50
-     - Break
+   * - 9:30 -  9:50
+     - OpenACC: Analysis and Parallelization
    * - 9:50 - 10:20
-     - OpenACC:
-   * - 10:20 - 10:30
      - Break-out rooms
    * - 10:30 - 10:40
      - Break
-   * - 10:40 - 11:00
-     - Wrap-up for OpenACC
+   * - 10:30 - 10:50
+     - OpenACC: Optimization
+   * - 10:50 - 11:20
+     - Break-out rooms
+   * - 11:20 - 11:30
+     - Break
    * - 11:30 - 12:30
      - CUDA: Parallel reduction use-case
 
@@ -95,6 +95,7 @@ About the course
 These course materials are developed for those who have the understanding of fundamentals of OpenACC and CUDA and would like to expand their knowledge.
 The course consists of lectures, type-along and hands-on sessions.
 
+The lectures will present the OpenACC framework with three key steps namely analysis, parallelization, and Optimization, in porting to high performance accelerated codes.
 CUDA lectures cover two main topics: how to optimize computational kernels for effitient execution on GPU hardware and how to explore the task-based parallelizm using streams and events.
 We will also briefly go through profiling tools that can help one to identify the computational bottleneck of the programm.
 
