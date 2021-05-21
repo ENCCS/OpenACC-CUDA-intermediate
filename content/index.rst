@@ -72,21 +72,21 @@ Tentative schedule
      -
    * - 9:00 -  9:10
      - Follow-ups from day 1
-   * - 9:10 -  9:50
+   * - 9:10 -  10:00
      - CUDA: Optimizing the reduction kernel
-   * - 9:50 - 10:10
+   * - 10:00 - 10:20
      - Break-out rooms
-   * - 10:10 - 10:20
+   * - 10:20 - 10:30
      - Break
-   * - 10:20 - 11:00
+   * - 10:30 - 11:20
      - CUDA: Exploring task-based parallelizm: streams and events
-   * - 11:00 - 11:20
+   * - 11:20 - 11:40
      - Break-out rooms
-   * - 11:20 - 11:30
+   * - 11:40 - 11:50
      - Break
-   * - 11:30 - 11:50
+   * - 11:50 - 12:20
      - CUDA: Notes on profiling tools
-   * - 11:50 - 12:00
+   * - 12:20 - 12:30
      - Wrap-up
 
 About the course
