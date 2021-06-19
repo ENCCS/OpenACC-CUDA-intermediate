@@ -1,0 +1,3643 @@
+%!PS-Adobe-3.0
+%%Title: mg_v08.c
+%%For: Jing Gong
+%%Creator: a2ps version 4.14
+%%CreationDate: Fri Sep 13 16:29:27 2013
+%%BoundingBox: 24 24 571 818
+%%DocumentData: Clean7Bit
+%%Orientation: Landscape
+%%Pages: 12
+%%PageOrder: Ascend
+%%DocumentMedia: A4 595 842 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-BoldOblique
+%%+ font Courier-Oblique
+%%+ font Helvetica
+%%+ font Helvetica-Bold
+%%+ font Symbol
+%%+ font Times-Bold
+%%+ font Times-Roman
+%%DocumentProcessColors: Black 
+%%DocumentSuppliedResources: procset a2ps-a2ps-hdr
+%%+ procset a2ps-black+white-Prolog
+%%+ encoding ISO-8859-1Encoding
+%%EndComments
+/a2psdict 200 dict def
+a2psdict begin
+%%BeginProlog
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Check PostScript language level.
+/languagelevel where {
+  pop /gs_languagelevel languagelevel def
+} {
+  /gs_languagelevel 1 def
+} ifelse
+
+% EPSF import as in the Red Book
+/BeginInclude {
+  /b4_Inc_state save def    		% Save state for cleanup
+  /dict_count countdictstack def	% Count objects on dict stack
+  /op_count count 1 sub def		% Count objects on operand stack 
+  userdict begin
+    0 setgray 0 setlinecap
+    1 setlinewidth 0 setlinejoin
+    10 setmiterlimit [ ] 0 setdash newpath
+    gs_languagelevel 1 ne {
+      false setstrokeadjust false setoverprint 
+    } if
+} bind def
+
+/EndInclude {
+  count op_count sub { pos } repeat	% Clean up stacks
+  countdictstack dict_count sub { end } repeat
+  b4_Inc_state restore
+} bind def
+
+/BeginEPSF {
+  BeginInclude
+  /showpage { } def
+} bind def
+
+/EndEPSF {
+  EndInclude
+} bind def
+
+% Page prefeed
+/page_prefeed {         % bool -> -
+  statusdict /prefeed known {
+    statusdict exch /prefeed exch put
+  } {
+    pop
+  } ifelse
+} bind def
+
+/deffont {
+  findfont exch scalefont def
+} bind def
+
+/reencode_font {
+  findfont reencode 2 copy definefont pop def
+} bind def
+
+% Function c-show (str => -)
+% centers text only according to x axis.
+/c-show { 
+  dup stringwidth pop
+  2 div neg 0 rmoveto
+  show
+} bind def
+
+% Function l-show (str => -)
+% prints texts so that it ends at currentpoint
+/l-show {
+  dup stringwidth pop neg 
+  0 
+  rmoveto show
+} bind def
+
+% center-fit show (str w => -)
+% show centered, and scale currentfont so that the width is less than w
+/cfshow {
+  exch dup stringwidth pop
+  % If the title is too big, try to make it smaller
+  3 2 roll 2 copy
+  gt
+  { % if, i.e. too big
+    exch div
+    currentfont exch scalefont setfont
+  } { % ifelse
+    pop pop 
+  }
+  ifelse
+  c-show			% center title
+} bind def
+
+% Return the y size of the current font
+% - => fontsize
+/currentfontsize {
+  currentfont /FontType get 0 eq {
+    currentfont /FontMatrix get 3 get
+  }{
+    currentfont /FontMatrix get 3 get 1000 mul
+  } ifelse
+} bind def
+
+% reencode the font
+% <encoding-vector> <fontdict> -> <newfontdict>
+/reencode { %def
+  dup length 5 add dict begin
+    { %forall
+      % <vector> <key> <val>
+      1 index /FID ne 
+      { def }{ pop pop } ifelse
+    } forall
+    /Encoding exch def % -
+
+    % Use the font's bounding box to determine the ascent, descent,
+    % and overall height; don't forget that these values have to be
+    % transformed using the font's matrix.
+    % We use `load' because sometimes BBox is executable, sometimes not.
+    % Since we need 4 numbers an not an array avoid BBox from being executed
+    /FontBBox load aload pop
+    FontMatrix transform /Ascent exch def pop
+    FontMatrix transform /Descent exch def pop
+    /FontHeight Ascent Descent sub def
+
+    % Get the underline position and thickness if they're defined.
+    % Use 1 if they are not defined.
+    currentdict /FontInfo 2 copy known
+    { get
+      /UnderlinePosition 2 copy % <FontInfo> /UP <FontInfo> /UP
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+
+      /UnderlineThickness 2 copy % <FontInfo> /UT <FontInfo> /UT
+      2 copy known
+      { get }{ pop pop 1 } ifelse
+      0 exch FontMatrix transform exch pop
+      def % <FontInfo>
+      pop % -
+    }{ pop pop
+    } ifelse
+
+    currentdict
+  end 
+} bind def
+
+% composite fonts for ASCII-EUC mixed strings
+% Version 1.2 1/31/1990
+% Original Ken'ichi HANDA (handa@etl.go.jp)
+% Modified Norio Katayama (katayama@rd.nacsis.ac.jp),1998
+% Extend & Fix Koji Nakamaru (maru@on.cs.keio.ac.jp), 1999
+% Anyone can freely copy, modify, distribute this program.
+
+/copyfont {	% font-dic extra-entry-count  copyfont  font-dic
+	1 index maxlength add dict begin
+	{	1 index /FID ne 2 index /UniqueID ne and
+		{def} {pop pop} ifelse
+	} forall
+	currentdict
+	end
+} bind def
+
+/compositefont { % ASCIIFontName EUCFontName RomanScale RomanOffset Rot(T/F) compositefont font
+    /RomanRotation exch def
+    /RomanOffset exch def
+    /RomanScale exch def
+    userdict /fixeucfont_dict known not {
+	userdict begin
+	    /fixeucfont_dict 2 dict begin
+		/UpperByteEncoding [
+		    16#00 1 16#20 { pop 0 } for
+		    16#21 1 16#28 { 16#20 sub } for
+		    16#29 1 16#2F { pop 0 } for
+		    16#30 1 16#74 { 16#27 sub } for
+		    16#75 1 16#FF { pop 0 } for
+		] def
+	        /LowerByteEncoding [
+		    16#00 1 16#A0 { pop /.notdef } for
+		    16#A1 1 16#FE { 16#80 sub 16 2 string cvrs
+				    (cXX) dup 1 4 -1 roll
+				    putinterval cvn } for
+		    /.notdef
+		] def
+		currentdict
+	    end def
+	end
+    } if
+    findfont dup /FontType get 0 eq {
+	14 dict begin
+	    %
+	    % 7+8 bit EUC font
+	    %
+	    12 dict begin
+		/EUCFont exch def
+		/FontInfo (7+8 bit EUC font) readonly def
+		/PaintType 0 def
+		/FontType 0 def
+		/FontMatrix matrix def
+		% /FontName
+		/Encoding fixeucfont_dict /UpperByteEncoding get def
+		/FMapType 2 def
+		EUCFont /WMode known
+		{ EUCFont /WMode get /WMode exch def }
+		{ /WMode 0 def } ifelse
+		/FDepVector [
+		    EUCFont /FDepVector get 0 get
+		    [ 16#21 1 16#28 {} for 16#30 1 16#74 {} for ]
+		    {
+			13 dict begin
+			    /EUCFont EUCFont def
+			    /UpperByte exch 16#80 add def	
+			    % /FontName
+			    /FontInfo (EUC lower byte font) readonly def
+			    /PaintType 0 def
+			    /FontType 3 def
+			    /FontMatrix matrix def
+			    /FontBBox {0 0 0 0} def
+			    /Encoding
+				fixeucfont_dict /LowerByteEncoding get def
+			    % /UniqueID
+			    % /WMode
+			    /BuildChar {
+				gsave
+				exch dup /EUCFont get setfont
+				/UpperByte get
+				2 string
+				dup 0 4 -1 roll put
+				dup 1 4 -1 roll put
+				dup stringwidth setcharwidth
+				0 0 moveto show
+				grestore
+			    } bind def
+			    currentdict
+			end
+			/lowerbytefont exch definefont
+		    } forall
+		] def
+		currentdict
+	    end
+	    /eucfont exch definefont
+	    exch
+	    findfont 1 copyfont dup begin
+		RomanRotation {
+			/FontMatrix FontMatrix
+			[ 0 RomanScale neg RomanScale 0 RomanOffset neg 0 ]
+			matrix concatmatrix def
+		}{
+			/FontMatrix FontMatrix
+			[ RomanScale 0 0 RomanScale 0 RomanOffset ] matrix concatmatrix
+			def
+			/CDevProc
+			    {pop pop pop pop 0 exch -1000 exch 2 div 880} def
+		} ifelse
+	    end
+	    /asciifont exch definefont
+	    exch
+	    /FDepVector [ 4 2 roll ] def
+	    /FontType 0 def
+	    /WMode 0 def
+	    /FMapType 4 def
+	    /FontMatrix matrix def
+	    /Encoding [0 1] def
+	    /FontBBox {0 0 0 0} def
+%	    /FontHeight 1.0 def % XXXX
+	    /FontHeight RomanScale 1.0 ge { RomanScale }{ 1.0 } ifelse def
+	    /Descent -0.3 def   % XXXX
+	    currentdict
+	end
+	/tmpfont exch definefont
+	pop
+	/tmpfont findfont
+    }{
+	pop findfont 0 copyfont
+    } ifelse
+} def	
+
+/slantfont {	% FontName slant-degree  slantfont  font'
+    exch findfont 1 copyfont begin
+    [ 1 0 4 -1 roll 1 0 0 ] FontMatrix exch matrix concatmatrix
+    /FontMatrix exch def
+    currentdict
+    end
+} def
+
+% Function print line number (<string> # -)
+/# {
+  gsave
+    sx cw mul neg 2 div 0 rmoveto
+    f# setfont
+    c-show
+  grestore
+} bind def
+
+% -------- Some routines to enlight plain b/w printings ---------
+
+% Underline
+% width --
+/dounderline {
+  currentpoint
+  gsave
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    0 rlineto
+    stroke
+  grestore
+} bind def
+
+% Underline a string
+% string --
+/dounderlinestring {
+  stringwidth pop
+  dounderline
+} bind def
+
+/UL {
+  /ul exch store
+} bind def
+
+% Draw a box of WIDTH wrt current font
+% width --
+/dobox {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    stroke
+  grestore
+} bind def
+
+/BX {
+  /bx exch store
+} bind def
+
+% Box a string
+% string --
+/doboxstring {
+  stringwidth pop
+  dobox
+} bind def
+
+%
+% ------------- Color routines ---------------
+%
+/FG /setrgbcolor load def
+
+% Draw the background
+% width --
+/dobackground {
+  currentpoint
+  gsave
+    newpath
+    moveto
+    0 currentfont /Descent get currentfontsize mul rmoveto
+    dup 0 rlineto
+    0 currentfont /FontHeight get currentfontsize mul rlineto
+    neg 0 rlineto
+    closepath
+    bgcolor aload pop setrgbcolor
+    fill
+  grestore
+} bind def
+
+% Draw bg for a string
+% string --
+/dobackgroundstring {
+  stringwidth pop
+  dobackground
+} bind def
+
+
+/BG {
+  dup /bg exch store
+  { mark 4 1 roll ] /bgcolor exch store } if
+} bind def
+
+
+/Show {
+  bg { dup dobackgroundstring } if
+  ul { dup dounderlinestring } if
+  bx { dup doboxstring } if
+  show
+} bind def
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T {
+  cw mul x0 add
+  bg { dup currentpoint pop sub dobackground } if
+  ul { dup currentpoint pop sub dounderline } if
+  bx { dup currentpoint pop sub dobox } if
+  y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n {
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+/S {
+  Show
+} bind def
+
+%%BeginResource: procset a2ps-a2ps-hdr 2.0 2
+%%Copyright: (c) 1988, 89, 90, 91, 92, 93 Miguel Santana
+%%Copyright: (c) 1995, 96, 97, 98 Akim Demaille, Miguel Santana
+% Function title: prints page header.
+% <ct> <rt> <lt> are passed as argument
+/title { 
+  % 1. Draw the background
+  x v get y v get moveto
+  gsave
+    0 th 2 div neg rmoveto 
+    th setlinewidth
+    0.95 setgray
+    pw 0 rlineto stroke
+  grestore
+  % 2. Border it
+  gsave
+    0.7 setlinewidth
+    pw 0 rlineto
+    0 th neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+  % stk: ct rt lt
+  x v get y v get th sub 1 add moveto
+%%IncludeResource: font Helvetica
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  % 3. The left title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    fnfs 0.8 mul hm rmoveto
+    show			% left title
+  grestore
+  exch
+  % stk: ct ltw rt
+  % 4. the right title
+  gsave
+    dup stringwidth pop fnfs 0.8 mul add exch % leave space took on stack
+    dup
+    pw exch stringwidth pop fnfs 0.8 mul add sub
+    hm
+    rmoveto
+    show			% right title
+  grestore
+  % stk: ct ltw rtw
+  % 5. the center title
+  gsave
+    pw 3 1 roll
+    % stk: ct pw ltw rtw
+    3 copy 
+    % Move to the center of the left room
+    sub add 2 div hm rmoveto
+    % What is the available space in here?
+    add sub fnfs 0.8 mul sub fnfs 0.8 mul sub
+    % stk: ct space_left
+%%IncludeResource: font Helvetica-Bold
+  fHelvetica-Bold fnfs scalefont setfont
+    cfshow
+  grestore
+} bind def
+
+% Function border: prints virtual page border
+/border { %def
+  gsave				% print four sides
+    0 setgray
+    x v get y v get moveto
+    0.7 setlinewidth		% of the square
+    pw 0 rlineto
+    0 ph neg rlineto
+    pw neg 0 rlineto
+    closepath stroke
+  grestore
+} bind def
+
+% Function water: prints a water mark in background
+/water { %def
+  gsave
+    scx scy moveto rotate
+%%IncludeResource: font Times-Bold
+  fTimes-Bold 100 scalefont setfont
+    .97 setgray
+    dup stringwidth pop 2 div neg -50 rmoveto
+    show
+  grestore
+} bind def
+
+% Function rhead: prints the right header
+/rhead {  %def
+  lx ly moveto
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  l-show
+} bind def
+
+% Function footer (cf rf lf -> -)
+/footer {
+  fHelvetica fnfs 0.8 mul scalefont setfont
+  dx dy moveto
+  show
+
+  snx sny moveto
+  l-show
+  
+  fnx fny moveto
+  c-show
+} bind def
+%%EndResource
+%%BeginResource: procset a2ps-black+white-Prolog 2.0 1
+
+% Function T(ab), jumps to the n-th tabulation in the current line
+/T { 
+  cw mul x0 add y0 moveto
+} bind def
+
+% Function n: move to the next line
+/n { %def
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+} bind def
+
+% Function N: show and move to the next line
+/N {
+  Show
+  /y0 y0 bfs sub store
+  x0 y0 moveto
+}  bind def
+
+/S {
+  Show
+} bind def
+
+/p {
+  false UL
+  false BX
+  fCourier bfs scalefont setfont
+  Show
+} bind def
+
+/sy {
+  false UL
+  false BX
+  fSymbol bfs scalefont setfont
+  Show
+} bind def
+
+/k {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/K {
+  false UL
+  false BX
+  fCourier-Bold bfs scalefont setfont
+  Show
+} bind def
+
+/c {
+  false UL
+  false BX
+  fCourier-Oblique bfs scalefont setfont
+  Show
+} bind def
+
+/C {
+  false UL
+  false BX
+  fCourier-BoldOblique bfs scalefont setfont
+  Show 
+} bind def
+
+/l {
+  false UL
+  false BX
+  fHelvetica bfs scalefont setfont
+  Show
+} bind def
+
+/L {
+  false UL
+  false BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show 
+} bind def
+
+/str{
+  false UL
+  false BX
+  fTimes-Roman bfs scalefont setfont
+  Show
+} bind def
+
+/e{
+  false UL
+  true BX
+  fHelvetica-Bold bfs scalefont setfont
+  Show
+} bind def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+%%IncludeResource: font Courier
+%%IncludeResource: font Courier-Oblique
+%%IncludeResource: font Courier-Bold
+%%IncludeResource: font Times-Roman
+%%IncludeResource: font Symbol
+%%IncludeResource: font Courier-BoldOblique
+%%BeginResource: encoding ISO-8859-1Encoding
+/ISO-8859-1Encoding [
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quoteright 
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash 
+/zero /one /two /three /four /five /six /seven 
+/eight /nine /colon /semicolon /less /equal /greater /question 
+/at /A /B /C /D /E /F /G 
+/H /I /J /K /L /M /N /O 
+/P /Q /R /S /T /U /V /W 
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore 
+/quoteleft /a /b /c /d /e /f /g 
+/h /i /j /k /l /m /n /o 
+/p /q /r /s /t /u /v /w 
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef 
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section 
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron 
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /bullet 
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown 
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla 
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis 
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply 
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls 
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla 
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis 
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide 
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis 
+] def
+%%EndResource
+% Initialize page description variables.
+/sh 595 def
+/sw 842 def
+/llx 24 def
+/urx 818 def
+/ury 571 def
+/lly 24 def
+/#copies 1 def
+/th 15.000000 def
+/fnfs 11 def
+/bfs 8.005733 def
+/cw 4.803440 def
+
+% Dictionary for ISO-8859-1 support
+/iso1dict 8 dict begin
+  /fCourier ISO-8859-1Encoding /Courier reencode_font
+  /fCourier-Bold ISO-8859-1Encoding /Courier-Bold reencode_font
+  /fCourier-BoldOblique ISO-8859-1Encoding /Courier-BoldOblique reencode_font
+  /fCourier-Oblique ISO-8859-1Encoding /Courier-Oblique reencode_font
+  /fHelvetica ISO-8859-1Encoding /Helvetica reencode_font
+  /fHelvetica-Bold ISO-8859-1Encoding /Helvetica-Bold reencode_font
+  /fTimes-Bold ISO-8859-1Encoding /Times-Bold reencode_font
+  /fTimes-Roman ISO-8859-1Encoding /Times-Roman reencode_font
+currentdict end def
+/bgcolor [ 0 0 0 ] def
+/bg false def
+/ul false def
+/bx false def
+% The font for line numbering
+/f# /Helvetica findfont bfs .6 mul scalefont def
+/fSymbol /Symbol findfont def
+/hm fnfs 0.25 mul def
+/pw
+   cw 81.400000 mul
+def
+/ph
+   501.959430 th add
+def
+/pmw urx llx sub pw 2 mul sub 1 div def
+/pmh 0 def
+/v 0 def
+/x [
+  0
+  dup pmw add pw add
+] def
+/y [
+  pmh ph add 0 mul ph add
+  dup
+] def
+/scx sw 2 div def
+/scy sh 2 div def
+/snx urx def
+/sny lly 2 add def
+/dx llx def
+/dy sny def
+/fnx scx def
+/fny dy def
+/lx snx def
+/ly ury fnfs 0.8 mul sub def
+/sx 0 def
+/tab 8 def
+/x0 0 def
+/y0 0 def
+%%EndSetup
+
+%%Page: (1-2) 1
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*--------------------------------------------------------------------) c n
+(  ) N
+(  NAS Parallel Benchmarks 2.3 OpenMP C versions - MG) N
+() N
+(  This benchmark is an OpenMP C version of the NPB MG code.) N
+(  ) N
+(  The OpenMP C versions are developed by RWCP and derived from the serial) N
+(  Fortran versions in "NPB 2.3-serial" developed by NAS.) N
+() N
+(  Permission to use, copy, distribute and modify this software for any) N
+(  purpose with or without fee is hereby granted.) N
+(  This software is provided "as is" without express or implied warranty.) N
+(  ) N
+(  Send comments on the OpenMP C versions to pdp-openmp@rwcp.or.jp) N
+() N
+(  Information on OpenMP activities at RWCP is available at:) N
+() N
+(           http://pdplab.trc.rwcp.or.jp/pdperf/Omni/) N
+(  ) N
+(  Information on NAS Parallel Benchmarks 2.3 is available at:) N
+(  ) N
+(           http://www.nas.nasa.gov/NAS/NPB/) N
+() N
+(--------------------------------------------------------------------*/) N
+(/*--------------------------------------------------------------------) N
+() N
+(  Authors: E. Barszcz) N
+(           P. Frederickson) N
+(           A. Woo) N
+(           M. Yarrow) N
+() N
+(  OpenMP C version: S. Satoh) N
+() N
+(  Data layout changes: A Hart) N
+(  ) N
+(--------------------------------------------------------------------*/) N
+() p n
+(#include) K
+( ") p
+(npb-C.h) str
+(") p n
+() N
+(#include) K
+( ") p
+(globals.h) str
+(") p n
+() N
+(/* parameters */) c n
+(#define) K
+( T_BENCH) p 16 T (1) N
+(#define) K
+() p 8 T (T_INIT) S 16 T (2) N
+() N
+(/* global variables */) c n
+(/* common /grid/ */) N
+(static) K
+( ) p
+(int) k
+( is1, is2, is3, ie1, ie2, ie3;) p n
+() N
+(/* functions prototypes */) c n
+(static) K
+( ) p
+(void) k
+( setup\() p
+(int) k
+( *n1, ) p
+(int) k
+( *n2, ) p
+(int) k
+( *n3, ) p
+(int) k
+( lt\);) p n
+(static) K
+( ) p
+(void) k
+( mg3P\() p
+(double) k
+( **u, ) p
+(double) k
+( *v, ) p
+(double) k
+( **r, ) p
+(double) k
+( a[4],) p n
+() S 8 T () S 16 T ( ) S
+(double) k
+( c[4], ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( k\);) p n
+(static) K
+( ) p
+(void) k
+( psinv\( ) p
+(double) k
+( *r, ) p
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3,) p n
+() S 8 T () S 16 T (   ) S
+(double) k
+( c[4], ) p
+(int) k
+( k\);) p n
+(static) K
+( ) p
+(void) k
+( resid\( ) p
+(double) k
+( *u, ) p
+(double) k
+( *v, ) p
+(double) k
+( *r,) p n
+() S 8 T () S 16 T (   ) S
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(double) k
+( a[4], ) p
+(int) k
+( k \);) p n
+(static) K
+( ) p
+(void) k
+( rprj3\( ) p
+(double) k
+( *r, ) p
+(int) k
+( m1k, ) p
+(int) k
+( m2k, ) p
+(int) k
+( m3k,) p n
+() S 8 T () S 16 T (   ) S
+(double) k
+( *s, ) p
+(int) k
+( m1j, ) p
+(int) k
+( m2j, ) p
+(int) k
+( m3j, ) p
+(int) k
+( k \);) p n
+(static) K
+( ) p
+(void) k
+( interp\( ) p
+(double) k
+( *z, ) p
+(int) k
+( mm1, ) p
+(int) k
+( mm2, ) p
+(int) k
+( mm3,) p n
+() S 8 T () S 16 T (    ) S
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( k \);) p n
+(static) K
+( ) p
+(void) k
+( norm2u3\() p
+(double) k
+( *r, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3,) p n
+(mg_v08.c) (Page 1/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T () S 16 T (    ) S
+(double) k
+( *rnm2, ) p
+(double) k
+( *rnmu, ) p
+(int) k
+( nx, ) p
+(int) k
+( ny, ) p
+(int) k
+( nz\);) p n
+(static) K
+( ) p
+(void) k
+( rep_nrm\() p
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3,) p n
+() S 8 T () S 16 T (    ) S
+(char) k
+( *title, ) p
+(int) k
+( kk\);) p n
+(static) K
+( ) p
+(void) k
+( comm3\() p
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( kk\);) p n
+(static) K
+( ) p
+(void) k
+( zran3\() p
+(double) k
+( *z, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( nx, ) p
+(int) k
+( ny, ) p
+(int) k
+( k\);) p n
+(static) K
+( ) p
+(void) k
+( showall\() p
+(double) k
+( *z, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3\);) p n
+(static) K
+( ) p
+(double) k
+( power\( ) p
+(double) k
+( a, ) p
+(int) k
+( n \);) p n
+(static) K
+( ) p
+(void) k
+( bubble\( ) p
+(double) k
+( ten[M][2], ) p
+(int) k
+( j1[M][2], ) p
+(int) k
+( j2[M][2],) p n
+() S 8 T () S 16 T (    ) S
+(int) k
+( j3[M][2], ) p
+(int) k
+( m, ) p
+(int) k
+( ind \);) p n
+(static) K
+( ) p
+(void) k
+( zero3\() p
+(double) k
+( *z, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3\);) p n
+(static) K
+( ) p
+(void) k
+( nonzero\() p
+(double) k
+( *z, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3\);) p n
+(#ifdef) K
+( USE_CUDA) p n
+(void) k
+( resid_cuda\() p
+(double) k
+( *u, ) p
+(double) k
+( *v, ) p
+(double) k
+( *r, ) p n
+() S 8 T () S 16 T () S 24 T (     ) S
+(int) k
+( *n1, ) p
+(int) k
+( *n2, ) p
+(int) k
+( *n3, ) p n
+() S 8 T () S 16 T () S
+(double) k
+( *a\);) p n
+(#endif) K n
+() p n
+() N
+(/*--------------------------------------------------------------------) c n
+(      program mg) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(int) k
+( main\() p
+(int) k
+( argc, ) p
+(char) k
+( *argv[]\) {) p n
+() N
+(/*-------------------------------------------------------------------------) c n
+(c k is the current level. It is passed down through subroutine args) N
+(c and is NOT global. it is the current iteration) N
+(c------------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( k, it;) p n
+(    ) S
+(double) k
+( t, tinit, mflops;) p n
+(    ) S
+(int) k
+( nthreads = 1;) p n
+() N
+(/*-------------------------------------------------------------------------) c n
+(c These arrays are in common because they are quite large) N
+(c and probably shouldn't be allocated on the stack. They) N
+(c are always passed as subroutine args. ) N
+(c------------------------------------------------------------------------*/) N
+(    ) p n
+(    ) S
+(double) k
+( **u, *v, **r;) p n
+(    ) S
+(double) k
+( a[4], c[4];) p n
+() N
+(    ) S
+(double) k
+( rnm2, rnmu;) p n
+(    ) S
+(double) k
+( epsilon = 1.0e-8;) p n
+(    ) S
+(int) k
+( n1, n2, n3, nit;) p n
+(    ) S
+(double) k
+( verify_value;) p n
+(    boolean verified;) N
+() N
+(    ) S
+(int) k
+( i, j, l;) p n
+(    ) S
+(FILE) k
+( *fp;) p n
+() N
+(    timer_clear\(T_BENCH\);) N
+(    timer_clear\(T_INIT\);) N
+() N
+(    timer_start\(T_INIT\);) N
+() N
+(/*----------------------------------------------------------------------) c n
+(c Read in and broadcast input data) N
+(c---------------------------------------------------------------------*/) N
+() p n
+(    printf\(") S
+(\\n\\n NAS Parallel Benchmarks 2.3 OpenMP C version) str
+(") p n
+() S 8 T (   ") S
+( - MG Benchmark\\n\\n) str
+("\);) p n
+(mg_v08.c) (Page 2/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (1/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (3-4) 2
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    fp = fopen\(") S
+(mg.input) str
+(", ") p
+(r) str
+("\);) p n
+(    ) S
+(if) K
+( \(fp != ) p
+(NULL) K
+(\) {) p n
+() S 8 T (printf\(") S
+( Reading from input file mg.input\\n) str
+("\);) p n
+() S 8 T (fscanf\(fp, ") S
+(%d) str
+(", &lt\);) p n
+() S 8 T () S
+(while) K
+(\(fgetc\(fp\) != ') p
+(\\n) str
+('\);) p n
+() S 8 T (fscanf\(fp, ") S
+(%d%d%d) str
+(", &nx[lt], &ny[lt], &nz[lt]\);) p n
+() S 8 T () S
+(while) K
+(\(fgetc\(fp\) != ') p
+(\\n) str
+('\);) p n
+() S 8 T (fscanf\(fp, ") S
+(%d) str
+(", &nit\);) p n
+() S 8 T () S
+(while) K
+(\(fgetc\(fp\) != ') p
+(\\n) str
+('\);) p n
+() S 8 T () S
+(for) K
+( \(i = 0; i <= 7; i++\) {) p n
+() S 8 T (    fscanf\(fp, ") S
+(%d) str
+(", &debug_vec[i]\);) p n
+() S 8 T (}) N
+() S 8 T (fclose\(fp\);) N
+(    } ) S
+(else) K
+( {) p n
+() S 8 T (printf\(") S
+( No input file. Using compiled defaults\\n) str
+("\);) p n
+(    ) N
+() S 8 T (lt = LT_DEFAULT;) N
+() S 8 T (nit = NIT_DEFAULT;) N
+() S 8 T (nx[lt] = NX_DEFAULT;) N
+() S 8 T (ny[lt] = NY_DEFAULT;) N
+() S 8 T (nz[lt] = NZ_DEFAULT;) N
+() N
+() S 8 T () S
+(for) K
+( \(i = 0; i <= 7; i++\) {) p n
+() S 8 T (    debug_vec[i] = DEBUG_DEFAULT;) N
+() S 8 T (}) N
+(    }) N
+() N
+(    ) S
+(if) K
+( \( \(nx[lt] != ny[lt]\) || \(nx[lt] != nz[lt]\) \) {) p n
+() S 8 T (Class = ') S
+(U) str
+(';) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+(\( nx[lt] == 32 && nit == 4 \) {) p n
+() S 8 T (Class = ') S
+(S) str
+(';) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+(\( nx[lt] == 64 && nit == 40 \) {) p n
+() S 8 T (Class = ') S
+(W) str
+(';) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+(\( nx[lt] == 256 && nit == 20 \) {) p n
+() S 8 T (Class = ') S
+(B) str
+(';) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+(\( nx[lt] == 512 && nit == 20 \) {) p n
+() S 8 T (Class = ') S
+(C) str
+(';) p n
+(    } ) S
+(else) K
+( ) p
+(if) K
+(\( nx[lt] == 256 && nit == 4 \) {) p n
+() S 8 T (Class = ') S
+(A) str
+(';) p n
+(    } ) S
+(else) K
+( {) p n
+() S 8 T (Class = ') S
+(U) str
+(';) p n
+(    }) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c  Use these for debug info:) N
+(c---------------------------------------------------------------------) N
+(c     debug_vec\(0\) = 1 !=> report all norms) N
+(c     debug_vec\(1\) = 1 !=> some setup information) N
+(c     debug_vec\(1\) = 2 !=> more setup information) N
+(c     debug_vec\(2\) = k => at level k or below, show result of resid) N
+(c     debug_vec\(3\) = k => at level k or below, show result of psinv) N
+(c     debug_vec\(4\) = k => at level k or below, show result of rprj) N
+(c     debug_vec\(5\) = k => at level k or below, show result of interp) N
+(c     debug_vec\(6\) = 1 => \(unused\)) N
+(c     debug_vec\(7\) = 1 => \(unused\)) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    a[0] = -8.0/3.0;) N
+(    a[1] =  0.0;) N
+(    a[2] =  1.0/6.0;) N
+(    a[3] =  1.0/12.0;) N
+(mg_v08.c) (Page 3/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    ) S
+(if) K
+( \(Class == ') p
+(A) str
+(' || Class == ') p
+(S) str
+(' || Class ==') p
+(W) str
+('\) {) p n
+(/*--------------------------------------------------------------------) c n
+(c     Coefficients for the S\(a\) smoother) N
+(c-------------------------------------------------------------------*/) N
+() p 8 T (c[0] =  -3.0/8.0;) N
+() S 8 T (c[1] =  1.0/32.0;) N
+() S 8 T (c[2] =  -1.0/64.0;) N
+() S 8 T (c[3] =   0.0;) N
+(    } ) S
+(else) K
+( {) p n
+(/*--------------------------------------------------------------------) c n
+(c     Coefficients for the S\(b\) smoother) N
+(c-------------------------------------------------------------------*/) N
+() p 8 T (c[0] =  -3.0/17.0;) N
+() S 8 T (c[1] =  1.0/33.0;) N
+() S 8 T (c[2] =  -1.0/61.0;) N
+() S 8 T (c[3] =   0.0;) N
+(    }) N
+(    ) N
+(    lb = 1;) N
+() N
+(    setup\(&n1,&n2,&n3,lt\);) N
+(      ) N
+(    ) S
+(// First we need some offsets so we know where each array starts) c n
+(    ) p
+(int) k
+( summ321[MAXLEVEL+1];) p n
+(    summ321[0] = 0;) N
+(    ) S
+(for) K
+( \(l = 1; l <= lt; l++\) {) p n
+(      summ321[l] = summ321[l-1] + m3[l]*m2[l]*m1[l];) N
+(    }) N
+() N
+(    u = \() S
+(double) k
+( **\)malloc\(\(lt+1\)*) p
+(sizeof) K
+(\() p
+(double) k
+( *\)\);) p n
+(    ) S
+(double) k
+( *udata = \() p
+(double) k
+( *\)malloc\(summ321[lt]*) p
+(sizeof) K
+(\() p
+(double) k
+(\)\);) p n
+() N
+(    v = \() S
+(double) k
+( *\)malloc\(m3[lt]*m2[lt]*m1[lt]*) p
+(sizeof) K
+(\() p
+(double) k
+(\)\);) p n
+() N
+(    r = \() S
+(double) k
+( **\)malloc\(\(lt+1\)*) p
+(sizeof) K
+(\() p
+(double) k
+( *\)\);) p n
+(    ) S
+(double) k
+( *rdata = \() p
+(double) k
+( *\)malloc\(summ321[lt]*) p
+(sizeof) K
+(\() p
+(double) k
+(\)\);) p n
+() N
+(    ) S
+(// The pointers to the data for the different levels in host memory) c n
+(    ) p
+(for) K
+( \(l = lt; l >=1; l--\) {) p n
+(      u[l] = &\(udata[summ321[l-1]]\);) N
+(      r[l] = &\(rdata[summ321[l-1]]\);) N
+(    }) N
+() N
+(#pragma) K
+( acc data create\(u[0:lt+1],udata[0:summ321[lt]]\) \\) p n
+(  create\(v[0:m3[lt]*m2[lt]*m1[lt]]\) \\) N
+(  create\(r[0:lt+1],rdata[0:summ321[lt]]\) \\) N
+(  copyin\(a[0:4],c[0:4]\)) N
+(    {) N
+() N
+(      ) S
+(// The pointers to the data for the different levels in device memory) c n
+(      ) p
+(// We use the same offsets here) c n
+(#pragma) K
+( acc parallel loop) p n
+(    ) S
+(for) K
+( \(l = lt; l >=1; l--\) {) p n
+(      u[l] = &\(udata[summ321[l-1]]\);) N
+(      r[l] = &\(rdata[summ321[l-1]]\);) N
+(    }) N
+() N
+(#pragma) K
+( omp parallel) p n
+({) N
+(    zero3\(u[lt],n1,n2,n3\);) N
+(}) N
+(mg_v08.c) (Page 4/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (2/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (5-6) 3
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    zran3\(v,n1,n2,n3,nx[lt],ny[lt],lt\);) p n
+() N
+(#pragma) K
+( omp parallel) p n
+({) N
+(    norm2u3\(v,n1,n2,n3,&rnm2,&rnmu,nx[lt],ny[lt],nz[lt]\);) N
+() N
+(#pragma) K
+( omp single) p n
+({) N
+(/*    printf\("\\n norms of random v are\\n"\);) c n
+(    printf\(" %4d%19.12e%19.12e\\n", 0, rnm2, rnmu\);) N
+(    printf\(" about to evaluate resid, k= %d\\n", lt\);*/) N
+() p n
+(    printf\(") S
+( Size: %3dx%3dx%3d \(class %1c\)\\n) str
+(",) p n
+() S 8 T (   nx[lt], ny[lt], nz[lt], Class\);) N
+(    printf\(") S
+( Iterations: %3d\\n) str
+(", nit\);) p n
+(}) N
+() N
+(    resid\(u[lt],v,r[lt],n1,n2,n3,a,lt\);) N
+(    norm2u3\(r[lt],n1,n2,n3,&rnm2,&rnmu,nx[lt],ny[lt],nz[lt]\);) N
+() N
+(/*c---------------------------------------------------------------------) c n
+(c     One iteration for startup) N
+(c---------------------------------------------------------------------*/) N
+(    mg3P\(u,v,r,a,c,n1,n2,n3,lt\);) p n
+(    resid\(u[lt],v,r[lt],n1,n2,n3,a,lt\);) N
+() N
+(#pragma) K
+( omp single) p n
+(    setup\(&n1,&n2,&n3,lt\);) N
+() N
+(    zero3\(u[lt],n1,n2,n3\);) N
+(  } ) S
+(/* pragma omp parallel */) c n
+() p n
+(    zran3\(v,n1,n2,n3,nx[lt],ny[lt],lt\);) N
+() N
+(    timer_stop\(T_INIT\);) N
+(    timer_start\(T_BENCH\);) N
+() N
+(#pragma) K
+( omp parallel firstprivate\(nit\) private\(it\)) p n
+(  {) N
+(    resid\(u[lt],v,r[lt],n1,n2,n3,a,lt\);) N
+(    norm2u3\(r[lt],n1,n2,n3,&rnm2,&rnmu,nx[lt],ny[lt],nz[lt]\);) N
+() N
+(    ) S
+(for) K
+( \( it = 1; it <= nit; it++\) {) p n
+() S 8 T (mg3P\(u,v,r,a,c,n1,n2,n3,lt\);) N
+() S 8 T (resid\(u[lt],v,r[lt],n1,n2,n3,a,lt\);) N
+(    }) N
+(    norm2u3\(r[lt],n1,n2,n3,&rnm2,&rnmu,nx[lt],ny[lt],nz[lt]\);) N
+() N
+(#if) K
+( ) p
+(defined) K
+(\(_OPENMP\)    ) p n
+(#pragma) K
+( omp master) p n
+(    nthreads = omp_get_num_threads\(\);) N
+(#endif) K
+(    ) p n
+(  } ) S
+(/* pragma omp parallel */) c n
+() p n
+(    timer_stop\(T_BENCH\);) N
+(    t = timer_read\(T_BENCH\);) N
+(    tinit = timer_read\(T_INIT\);) N
+() N
+(    verified = FALSE;) N
+(    verify_value = 0.0;) N
+() N
+(    printf\(") S
+( Initialization time: %15.3f seconds\\n) str
+(", tinit\);) p n
+(mg_v08.c) (Page 5/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    printf\(") p
+( Benchmark completed\\n) str
+("\);) p n
+() N
+(    ) S
+(if) K
+( \(Class != ') p
+(U) str
+('\) {) p n
+() S 8 T () S
+(if) K
+( \(Class == ') p
+(S) str
+('\) {) p n
+(            verify_value = 0.530770700573e-04;) N
+() S 8 T (} ) S
+(else) K
+( ) p
+(if) K
+( \(Class == ') p
+(W) str
+('\) {) p n
+(            verify_value = 0.250391406439e-17;  ) S
+(/* 40 iterations*/) c n
+(/*) S 8 T () S 16 T () S 24 T () S 32 T (0.183103168997d-044 iterations*/) N
+() p 8 T (} ) S
+(else) K
+( ) p
+(if) K
+( \(Class == ') p
+(A) str
+('\) {) p n
+(            verify_value = 0.2433365309e-5;) N
+(        } ) S
+(else) K
+( ) p
+(if) K
+( \(Class == ') p
+(B) str
+('\) {) p n
+(            verify_value = 0.180056440132e-5;) N
+(        } ) S
+(else) K
+( ) p
+(if) K
+( \(Class == ') p
+(C) str
+('\) {) p n
+(            verify_value = 0.570674826298e-06;) N
+() S 8 T (}) N
+() N
+() S 8 T () S
+(if) K
+( \( fabs\( rnm2 - verify_value \) <= epsilon \) {) p n
+(            verified = TRUE;) N
+() S 8 T (    printf\(") S
+( VERIFICATION SUCCESSFUL\\n) str
+("\);) p n
+() S 8 T (    printf\(") S
+( L2 Norm is %20.12e\\n) str
+(", rnm2\);) p n
+() S 8 T (    printf\(") S
+( Error is   %20.12e\\n) str
+(", rnm2 - verify_value\);) p n
+() S 8 T (} ) S
+(else) K
+( {) p n
+(            verified = FALSE;) N
+() S 8 T (    printf\(") S
+( VERIFICATION FAILED\\n) str
+("\);) p n
+() S 8 T (    printf\(") S
+( L2 Norm is             %20.12e\\n) str
+(", rnm2\);) p n
+() S 8 T (    printf\(") S
+( The correct L2 Norm is %20.12e\\n) str
+(", verify_value\);) p n
+() S 8 T (}) N
+(    } ) S
+(else) K
+( {) p n
+() S 8 T (verified = FALSE;) N
+() S 8 T (printf\(") S
+( Problem size unknown\\n) str
+("\);) p n
+() S 8 T (printf\(") S
+( NO VERIFICATION PERFORMED\\n) str
+("\);) p n
+(    }) N
+() N
+(    ) S
+(if) K
+( \( t != 0.0 \) {) p n
+() S 8 T () S
+(int) k
+( nn = nx[lt]*ny[lt]*nz[lt];) p n
+() S 8 T (mflops = 58.*nit*nn*1.0e-6 / t;) N
+(    } ) S
+(else) K
+( {) p n
+() S 8 T (mflops = 0.0;) N
+(    }) N
+() N
+(    c_print_results\(") S
+(MG) str
+(", Class, nx[lt], ny[lt], nz[lt], ) p n
+() S 8 T () S 16 T (    nit, nthreads, t, mflops, ") S
+(          floating point) str
+(", ) p n
+() S 8 T () S 16 T (    verified, NPBVERSION, COMPILETIME,) N
+() S 8 T () S 16 T (    CS1, CS2, CS3, CS4, CS5, CS6, CS7\);) N
+(} ) S
+(//acc end data) c n
+(}) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( setup\() p
+(int) k
+( *n1, ) p
+(int) k
+( *n2, ) p
+(int) k
+( *n3, ) p
+(int) k
+( lt\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( k;) p n
+() N
+(    ) S
+(for) K
+( \( k = lt-1; k >= 1; k--\) {) p n
+() S 8 T (nx[k] = nx[k+1]/2;) N
+() S 8 T (ny[k] = ny[k+1]/2;) N
+() S 8 T (nz[k] = nz[k+1]/2;) N
+(    }) N
+(mg_v08.c) (Page 6/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (3/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (7-8) 4
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    ) S
+(for) K
+( \(k = 1; k <= lt; k++\) {) p n
+() S 8 T (m1[k] = nx[k]+2;) N
+() S 8 T (m2[k] = nz[k]+2;) N
+() S 8 T (m3[k] = ny[k]+2;) N
+(    }) N
+() N
+(    is1 = 1;) N
+(    ie1 = nx[lt];) N
+(    *n1 = nx[lt]+2;) N
+(    is2 = 1;) N
+(    ie2 = ny[lt];) N
+(    *n2 = ny[lt]+2;) N
+(    is3 = 1;) N
+(    ie3 = nz[lt];) N
+(    *n3 = nz[lt]+2;) N
+() N
+(    ) S
+(if) K
+( \(debug_vec[1] >=  1 \) {) p n
+() S 8 T (printf\(") S
+( in setup, \\n) str
+("\);) p n
+() S 8 T (printf\(") S
+(  lt  nx  ny  nz  n1  n2  n3 is1 is2 is3 ie1 ie2 ie3\\n) str
+("\);) p n
+() S 8 T (printf\(") S
+(%4d%4d%4d%4d%4d%4d%4d%4d%4d%4d%4d%4d%4d\\n) str
+(",) p n
+() S 8 T (       lt,nx[lt],ny[lt],nz[lt],*n1,*n2,*n3,is1,is2,is3,ie1,ie2,ie3\);) N
+(    }) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( mg3P\() p
+(double) k
+( **u, ) p
+(double) k
+( *v, ) p
+(double) k
+( **r, ) p
+(double) k
+( a[4],) p n
+() S 8 T () S 16 T ( ) S
+(double) k
+( c[4], ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( k\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     multigrid V-cycle routine) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( j;) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c     down cycle.) N
+(c     restrict the residual from the find grid to the coarse) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(for) K
+( \(k = lt; k >= lb+1; k--\) {) p n
+() S 8 T (j = k-1;) N
+() S 8 T (rprj3\(r[k], m1[k], m2[k], m3[k],) N
+() S 8 T (      r[j], m1[j], m2[j], m3[j], k\);) N
+(    }) N
+() N
+(    k = lb;) N
+(/*--------------------------------------------------------------------) c n
+(c     compute an approximate solution on the coarsest grid) N
+(c-------------------------------------------------------------------*/) N
+(    zero3\(u[k], m1[k], m2[k], m3[k]\);) p n
+(    psinv\(r[k], u[k], m1[k], m2[k], m3[k], c, k\);) N
+() N
+(    ) S
+(for) K
+( \(k = lb+1; k <= lt-1; k++\) {) p n
+() S 8 T (j = k-1;) N
+(/*--------------------------------------------------------------------) c n
+(c        prolongate from level k-1  to k) N
+(mg_v08.c) (Page 7/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c-------------------------------------------------------------------*/) c n
+() p 8 T (zero3\(u[k], m1[k], m2[k], m3[k]\);) N
+() S 8 T (interp\(u[j], m1[j], m2[j], m3[j],) N
+() S 8 T (       u[k], m1[k], m2[k], m3[k], k\);) N
+(/*--------------------------------------------------------------------) c n
+(c        compute residual for level k) N
+(c-------------------------------------------------------------------*/) N
+() p 8 T (resid\(u[k], r[k], r[k], m1[k], m2[k], m3[k], a, k\);) N
+(/*--------------------------------------------------------------------) c n
+(c        apply smoother) N
+(c-------------------------------------------------------------------*/) N
+() p 8 T (psinv\(r[k], u[k], m1[k], m2[k], m3[k], c, k\);) N
+(    }) N
+() N
+(    j = lt - 1;) N
+(    k = lt;) N
+(    interp\(u[j], m1[j], m2[j], m3[j], u[lt], n1, n2, n3, k\);) N
+(    resid\(u[lt], v, r[lt], n1, n2, n3, a, k\);) N
+(    psinv\(r[lt], u[lt], n1, n2, n3, c, k\);) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( psinv\( ) p
+(double) k
+( *r, ) p
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3,) p n
+() S 8 T () S 16 T (   ) S
+(double) k
+( c[4], ) p
+(int) k
+( k\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     psinv applies an approximate inverse as smoother:  u = u + Cr) N
+(c) N
+(c     This  implementation costs  15A + 4M per result, where) N
+(c     A and M denote the costs of Addition and Multiplication.  ) N
+(c     Presuming coefficient c\(3\) is zero \(the NPB assumes this,) N
+(c     but it is thus not a general case\), 2A + 1M may be eliminated,) N
+(c     resulting in 13A + 3M.) N
+(c     Note that this vectorizes, and is also fine for cache ) N
+(c     based machines.  ) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( i3, i2, i1;) p n
+(    ) S
+(double) k
+( r1[M], r2[M];) p n
+() N
+(    ) S
+(int) k
+( n12 = n1*n2;) p n
+(    ) S
+(int) k
+( i123;) p n
+() N
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop vector_length\(NTHREADS\) private\(r1,r2\) \\) p n
+(  pcopy\(u[0:n1*n2*n3]\) \\) N
+(  pcopyin\(r[0:n1*n2*n3],c[0:4]\)) N
+(    ) S
+(for) K
+( \(i3 = 1; i3 < n3-1; i3++\) {) p n
+() S 8 T () S
+(for) K
+( \(i2 = 1; i2 < n2-1; i2++\) {) p n
+(            ) S
+(for) K
+( \(i1 = 0; i1 < n1; i1++\) {) p n
+() S 8 T (      i123 = i1 + n1*i2 + n12*i3;) N
+() S 8 T () S 16 T (r1[i1] = r[i123-n1] + r[i123+n1]) N
+() S 8 T () S 16 T (    + r[i123-n12] + r[i123+n12];) N
+() S 8 T () S 16 T (r2[i1] = r[i123-n1-n12] + r[i123+n1-n12]) N
+() S 8 T () S 16 T (    + r[i123-n1+n12] + r[i123+n1+n12];) N
+() S 8 T (    }) N
+(            ) S
+(for) K
+( \(i1 = 1; i1 < n1-1; i1++\) {) p n
+(mg_v08.c) (Page 8/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (4/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (9-10) 5
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (      i123 = i1 + n1*i2 + n12*i3;) N
+() S 8 T () S 16 T (u[i123] = u[i123]) N
+() S 8 T () S 16 T (    + c[0] * r[i123]) N
+() S 8 T () S 16 T (    + c[1] * \( r[i123-1] + r[i123+1]) N
+() S 8 T () S 16 T () S 24 T (       + r1[i1] \)) N
+() S 8 T () S 16 T (    + c[2] * \( r2[i1] + r1[i1-1] + r1[i1+1] \);) N
+(/*--------------------------------------------------------------------) c n
+(c  Assume c\(3\) = 0    \(Enable line below if c\(3\) not= 0\)) N
+(c---------------------------------------------------------------------) N
+(c    >                     + c\(3\) * \( r2\(i1-1\) + r2\(i1+1\) \)) N
+(c-------------------------------------------------------------------*/) N
+() p 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c     exchange boundary points) N
+(c-------------------------------------------------------------------*/) N
+(    comm3\(u,n1,n2,n3,k\);) p n
+() N
+(    ) S
+(if) K
+( \(debug_vec[0] >= 1 \) {) p n
+(#pragma) K
+( omp single) p n
+() S 8 T (rep_nrm\(u,n1,n2,n3,") S
+(   psinv) str
+(",k\);) p n
+(    }) N
+() N
+(    ) S
+(if) K
+( \( debug_vec[3] >= k \) {) p n
+(#pragma) K
+( omp single) p n
+() S 8 T (showall\(u,n1,n2,n3\);) N
+(    }) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( resid\( ) p
+(double) k
+( *u, ) p
+(double) k
+( *v, ) p
+(double) k
+( *r,) p n
+() S 8 T () S 16 T (   ) S
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(double) k
+( a[4], ) p
+(int) k
+( k \){) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     resid computes the residual:  r = v - Au) N
+(c) N
+(c     This  implementation costs  15A + 4M per result, where) N
+(c     A and M denote the costs of Addition \(or Subtraction\) and ) N
+(c     Multiplication, respectively. ) N
+(c     Presuming coefficient a\(1\) is zero \(the NPB assumes this,) N
+(c     but it is thus not a general case\), 3A + 1M may be eliminated,) N
+(c     resulting in 12A + 3M.) N
+(c     Note that this vectorizes, and is also fine for cache ) N
+(c     based machines.  ) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( i3, i2, i1;) p n
+(    ) S
+(double) k
+( u1[M], u2[M];) p n
+() N
+(    ) S
+(int) k
+( n12 = n1*n2;) p n
+(    ) S
+(int) k
+( i123;) p n
+() N
+(#ifdef) K
+( USE_CUDA) p n
+(#ifdef) K
+( _OPENACC) p n
+(#pragma) K
+( acc data present\(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4],r[0:n1*n2*n3]\)) p n
+(mg_v08.c) (Page 9/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    {) p n
+(#pragma) K
+( acc host_data use_device\(u,v,r,a\)) p n
+(      {) N
+() S 8 T (resid_cuda\(u,v,r,&n1,&n2,&n3,a\);) N
+(      }) N
+(    }) N
+(#else) K
+( ) p
+(/* _OPENACC */) c n
+(#error) K
+( ") p
+(Unsupported option combination 'ACC=no CUDA=yes') str
+(") p n
+(#endif) K
+( ) p
+(/*_OPENACC */) c n
+(#else) K
+( ) p
+(/* USE_CUDA */) c n
+(#pragma) K
+( omp ) p
+(for) K
+( private\(i123\)) p n
+(#pragma) K
+( acc parallel loop private\(u1,u2\) vector_length\(NTHREADS\) \\) p n
+(  pcopyin\(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4]\)) S 48 T (\\) N
+(  pcopyout\(r[0:n1*n2*n3]\)) N
+(    ) S
+(for) K
+( \(i3 = 1; i3 < n3-1; i3++\) {) p n
+() S 8 T () S
+(for) K
+( \(i2 = 1; i2 < n2-1; i2++\) {) p n
+(            ) S
+(for) K
+( \(i1 = 0; i1 < n1; i1++\) {) p n
+() S 8 T (      i123 = i1 + n1*i2 + n12*i3;) N
+() S 8 T () S 16 T (u1[i1] = u[i123-n1] + u[i123+n1]) N
+() S 8 T () S 16 T (       + u[i123-n12] + u[i123+n12];) N
+() S 8 T () S 16 T (u2[i1] = u[i123-n1-n12] + u[i123+n1-n12]) N
+() S 8 T () S 16 T (       + u[i123-n1+n12] + u[i123+n1+n12];) N
+() S 8 T (    }) N
+() S 8 T (    ) S
+(for) K
+( \(i1 = 1; i1 < n1-1; i1++\) {) p n
+() S 8 T (      i123 = i1 + n1*i2 + n12*i3;) N
+() S 8 T () S 16 T (r[i123] = v[i123]) N
+() S 8 T () S 16 T (    - a[0] * u[i123]) N
+(/*--------------------------------------------------------------------) c n
+(c  Assume a\(1\) = 0      \(Enable 2 lines below if a\(1\) not= 0\)) N
+(c---------------------------------------------------------------------) N
+(c    >                     - a\(1\) * \( u\(i1-1,i2,i3\) + u\(i1+1,i2,i3\)) N
+(c    >                              + u1\(i1\) \)) N
+(c-------------------------------------------------------------------*/) N
+() p 8 T () S 16 T (- a[2] * \( u2[i1] + u1[i1-1] + u1[i1+1] \)) N
+() S 8 T () S 16 T (      - a[3] * \( u2[i1-1] + u2[i1+1] \);) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(#endif) K
+( ) p
+(/* USE_CUDA */) c n
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     exchange boundary data) N
+(c--------------------------------------------------------------------*/) N
+(    comm3\(r,n1,n2,n3,k\);) p n
+() N
+(    ) S
+(if) K
+( \(debug_vec[0] >= 1 \) {) p n
+(#pragma) K
+( omp single) p n
+() S 8 T (rep_nrm\(r,n1,n2,n3,") S
+(   resid) str
+(",k\);) p n
+(    }) N
+() N
+(    ) S
+(if) K
+( \( debug_vec[2] >= k \) {) p n
+(#pragma) K
+( omp single) p n
+() S 8 T (showall\(r,n1,n2,n3\);) N
+(    }) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( rprj3\( ) p
+(double) k
+( *r, ) p
+(int) k
+( m1k, ) p
+(int) k
+( m2k, ) p
+(int) k
+( m3k,) p n
+() S 8 T () S 16 T (   ) S
+(double) k
+( *s, ) p
+(int) k
+( m1j, ) p
+(int) k
+( m2j, ) p
+(int) k
+( m3j, ) p
+(int) k
+( k \) {) p n
+() N
+(mg_v08.c) (Page 10/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (5/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (11-12) 6
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     rprj3 projects onto the next coarser grid, ) N
+(c     using a trilinear Finite Element projection:  s = r' = P r) N
+(c     ) N
+(c     This  implementation costs  20A + 4M per result, where) N
+(c     A and M denote the costs of Addition and Multiplication.  ) N
+(c     Note that this vectorizes, and is also fine for cache ) N
+(c     based machines.  ) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( j3, j2, j1, i3, i2, i1, d1, d2, d3;) p n
+() N
+(    ) S
+(double) k
+( x1[M], y1[M], x2, y2;) p n
+() N
+(    ) S
+(int) k
+( m12k = m1k*m2k;) p n
+(    ) S
+(int) k
+( m12j = m1j*m2j;) p n
+(    ) S
+(int) k
+( i123, j123;) p n
+() N
+(    ) S
+(if) K
+( \(m1k == 3\) {) p n
+(        d1 = 2;) N
+(    } ) S
+(else) K
+( {) p n
+(        d1 = 1;) N
+(    }) N
+() N
+(    ) S
+(if) K
+( \(m2k == 3\) {) p n
+(        d2 = 2;) N
+(    } ) S
+(else) K
+( {) p n
+(        d2 = 1;) N
+(    }) N
+() N
+(    ) S
+(if) K
+( \(m3k == 3\) {) p n
+(        d3 = 2;) N
+(    } ) S
+(else) K
+( {) p n
+(        d3 = 1;) N
+(    }) N
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop vector_length\(NTHREADS\) private\(x1,y1\)) p 72 T (\\) N
+(  pcopyout\(s[0:m1j*m2j*m3j]\)) S 32 T () S 40 T () S 48 T (\\) N
+(  pcopyin\(r[0:m1k*m2k*m3k]\)) N
+(    ) S
+(for) K
+( \(j3 = 1; j3 < m3j-1; j3++\) {) p n
+() S 8 T (i3 = 2*j3-d3;) N
+(/*C        i3 = 2*j3-1*/) c n
+() p 8 T () S
+(for) K
+( \(j2 = 1; j2 < m2j-1; j2++\) {) p n
+(            i2 = 2*j2-d2;) N
+(/*C           i2 = 2*j2-1*/) c n
+() p n
+(            ) S
+(for) K
+( \(j1 = 1; j1 < m1j; j1++\) {) p n
+() S 8 T () S 16 T (i1 = 2*j1-d1;) N
+(/*C             i1 = 2*j1-1*/) c n
+() p 8 T () S 16 T (i123 = i1 + m1k*i2 + m12k*i3;) N
+() S 8 T () S 16 T (x1[i1] = r[i123+m12k] + r[i123+2*m1k+m12k]) N
+() S 8 T () S 16 T (    + r[i123+m1k] + r[i123+m1k+2*m12k];) N
+() S 8 T () S 16 T (y1[i1] = r[i123] + r[i123+2*m12k]) N
+() S 8 T () S 16 T (    + r[i123+2*m1k] + r[i123+2*m1k+2*m12k];) N
+() S 8 T (    }) N
+() N
+(            ) S
+(for) K
+( \(j1 = 1; j1 < m1j-1; j1++\) {) p n
+() S 8 T () S 16 T (i1 = 2*j1-d1;) N
+(/*C             i1 = 2*j1-1*/) c n
+(mg_v08.c) (Page 11/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T () S 16 T (i123 = i1 + m1k*i2 + m12k*i3;) N
+() S 8 T () S 16 T (j123 = j1 + m1j*j2 + m12j*j3;) N
+() S 8 T () S 16 T (y2 = r[i123+1] + r[i123+1+2*m12k]) N
+() S 8 T () S 16 T (    + r[i123+2*m1k+1] + r[i123+1+2*m1k+2*m12k];) N
+() S 8 T () S 16 T (x2 = r[i123+1+m12k] + r[i123+1+2*m1k+m12k]) N
+() S 8 T () S 16 T (    + r[i123+1+m1k] + r[i123+1+m1k+2*m12k];) N
+() S 8 T () S 16 T (s[j123] =) N
+() S 8 T () S 16 T (    0.5 * r[i123+1+m1k+m12k]) N
+() S 8 T () S 16 T (    + 0.25 * \( r[i123+m1k+m12k] + r[i123+2+m1k+m12k] + x2\)) N
+() S 8 T () S 16 T (    + 0.125 * \( x1[i1] + x1[i1+2] + y2\)) N
+() S 8 T () S 16 T (    + 0.0625 * \( y1[i1] + y1[i1+2] \);) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(    comm3\(s,m1j,m2j,m3j,k-1\);) N
+() N
+(    ) S
+(if) K
+( \(debug_vec[0] >= 1 \) {) p n
+(#pragma) K
+( omp single) p n
+() S 8 T (rep_nrm\(s,m1j,m2j,m3j,") S
+(   rprj3) str
+(",k-1\);) p n
+(    }) N
+() N
+(    ) S
+(if) K
+( \(debug_vec[4] >= k \) {) p n
+(#pragma) K
+( omp single) p n
+() S 8 T (showall\(s,m1j,m2j,m3j\);) N
+(    }) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( interp\( ) p
+(double) k
+( *z, ) p
+(int) k
+( mm1, ) p
+(int) k
+( mm2, ) p
+(int) k
+( mm3,) p n
+() S 8 T () S 16 T (    ) S
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( k \) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     interp adds the trilinear interpolation of the correction) N
+(c     from the coarser grid to the current approximation:  u = u + Qu') N
+(c     ) N
+(c     Observe that this  implementation costs  16A + 4M, where) N
+(c     A and M denote the costs of Addition and Multiplication.  ) N
+(c     Note that this vectorizes, and is also fine for cache ) N
+(c     based machines.  Vector machines may get slightly better ) N
+(c     performance however, with 8 separate "do i1" loops, rather than 4.) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( i3, i2, i1, d1, d2, d3, t1, t2, t3;) p n
+() N
+(/*) c n
+(c note that m = 1037 in globals.h but for this only need to be) N
+(c 535 to handle up to 1024^3) N
+(c      integer m) N
+(c      parameter\( m=535 \)) N
+(*/) N
+(    ) p
+(double) k
+( z1[M], z2[M], z3[M];) p n
+() N
+(    ) S
+(int) k
+( mm12 = mm1*mm2;) p n
+(    ) S
+(int) k
+( n12 = n1*n2;) p n
+(    ) S
+(int) k
+( i123, j123;) p n
+() N
+(    ) S
+(if) K
+( \( n1 != 3 && n2 != 3 && n3 != 3 \) {) p n
+(mg_v08.c) (Page 12/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (6/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (13-14) 7
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop vector_length\(NTHREADS\) private\(z1,z2,z3\)) p 72 T (\\) N
+(  pcopy\(u[0:n1*n2*n3]\)) S 24 T () S 32 T () S 40 T (\\) N
+(  pcopyin\(z[0:mm1*mm2*mm3]\)) N
+() S 8 T () S
+(for) K
+( \(i3 = 0; i3 < mm3-1; i3++\) {) p n
+(            ) S
+(for) K
+( \(i2 = 0; i2 < mm2-1; i2++\) {) p n
+() S 8 T () S 16 T () S
+(for) K
+( \(i1 = 0; i1 < mm1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (    z1[i1] = z[i123+mm1] + z[i123];) N
+() S 8 T () S 16 T (    z2[i1] = z[i123+mm12] + z[i123];) N
+() S 8 T () S 16 T (    z3[i1] = z[i123+mm1+mm12] + z[i123+mm12] + z1[i1];) N
+() S 8 T () S 16 T (}) N
+(#pragma) K
+( acc loop vector) p n
+() S 8 T () S 16 T () S
+(for) K
+( \(i1 = 0; i1 < mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = 2*i1 + n1*\(2*i2 + n2 * 2*i3\);) N
+() S 8 T () S 16 T (    u[j123] += z[i123];) N
+() S 8 T () S 16 T (    u[j123+1] += 0.5*\(z[i123+1]+z[i123]\);) N
+() S 8 T () S 16 T (}) N
+(#pragma) K
+( acc loop vector) p n
+() S 8 T () S 16 T () S
+(for) K
+( \(i1 = 0; i1 < mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  j123 = 2*i1 + n1*\(2*i2 + n2 * 2*i3\);) N
+() S 8 T () S 16 T (    u[j123+n1] += 0.5 * z1[i1];) N
+() S 8 T () S 16 T (    u[j123+1+n1] += 0.25*\( z1[i1] + z1[i1+1] \);) N
+() S 8 T () S 16 T (}) N
+(#pragma) K
+( acc loop vector) p n
+() S 8 T () S 16 T () S
+(for) K
+( \(i1 = 0; i1 < mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  j123 = 2*i1 + n1*\(2*i2 + n2 * 2*i3\);) N
+() S 8 T () S 16 T (    u[j123+n12] += 0.5 * z2[i1];) N
+() S 8 T () S 16 T (    u[j123+n12+1] += 0.25*\( z2[i1] + z2[i1+1] \);) N
+() S 8 T () S 16 T (}) N
+(#pragma) K
+( acc loop vector) p n
+() S 8 T () S 16 T () S
+(for) K
+( \(i1 = 0; i1 < mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  j123 = 2*i1 + n1*\(2*i2 + n2 * 2*i3\);) N
+() S 8 T () S 16 T (    u[j123+n1+n12] += 0.25* z3[i1];) N
+() S 8 T () S 16 T (    u[j123+n1+n12+1] += 0.125*\( z3[i1] + z3[i1+1] \);) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    } ) S
+(else) K
+( {) p n
+() S 8 T () S
+(if) K
+( \(n1 == 3\) {) p n
+(            d1 = 2;) N
+(            t1 = 1;) N
+() S 8 T (} ) S
+(else) K
+( {) p n
+(            d1 = 1;) N
+(            t1 = 0;) N
+() S 8 T (}) N
+(         ) N
+() S 8 T () S
+(if) K
+( \(n2 == 3\) {) p n
+(            d2 = 2;) N
+(            t2 = 1;) N
+() S 8 T (} ) S
+(else) K
+( {) p n
+(            d2 = 1;) N
+(            t2 = 0;) N
+() S 8 T (}) N
+(         ) N
+() S 8 T () S
+(if) K
+( \(n3 == 3\) {) p n
+(            d3 = 2;) N
+(            t3 = 1;) N
+() S 8 T (} ) S
+(else) K
+( {) p n
+(            d3 = 1;) N
+(            t3 = 0;) N
+(mg_v08.c) (Page 13/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (}) N
+(         ) N
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop vector_length\(NTHREADS\) \\) p n
+(  pcopy\(u[0:n1*n2*n3]\)) S 24 T () S 32 T () S 40 T (\\) N
+(  pcopyin\(z[0:mm1*mm2*mm3]\)) N
+() S 8 T () S
+(for) K
+( \( i3 = d3; i3 <= mm3-1; i3++\) {) p n
+(            ) S
+(for) K
+( \( i2 = d2; i2 <= mm2-1; i2++\) {) p n
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = d1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = n12*\(2*i3-d3-1\)+n1*\(2*i2-d2-1\)+\(2*i1-d1-1\);) N
+() S 8 T () S 16 T (    u[j123] += z[i123-1-mm1-mm12];) N
+() S 8 T () S 16 T (}) N
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = 1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = n12*\(2*i3-d3-1\)+n1*\(2*i2-d2-1\)+\(2*i1-t1-1\); ) N
+() S 8 T () S 16 T (    u[j123] += ) N
+() S 8 T () S 16 T (      0.5*\(z[i123-mm1-mm12]+z[i123-1-mm1-mm12]\);) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+(            ) S
+(for) K
+( \( i2 = 1; i2 <= mm2-1; i2++\) {) p n
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = d1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = n12*\(2*i3-d3-1\)+n1*\(2*i2-t2-1\)+\(2*i1-d1-1\);) N
+() S 8 T () S 16 T (    u[j123] += ) N
+() S 8 T () S 16 T (      0.5*\(z[i123-1-mm12]+z[i123-1-mm1-mm12]\);) N
+() S 8 T () S 16 T (}) N
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = 1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = n12*\(2*i3-d3-1\)+n1*\(2*i2-t2-1\)+\(2*i1-t1-1\);) N
+() S 8 T () S 16 T (    u[j123] += ) N
+() S 8 T () S 16 T (      0.25*\(z[i123-mm12]+z[i123-mm1-mm12]) N
+() S 8 T () S 16 T () S 24 T (       +z[i123-1-mm12]+z[i123-1-mm1-mm12]\);) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop vector_length\(NTHREADS\) \\) p n
+(  pcopy\(u[0:n1*n2*n3]\)) S 24 T () S 32 T () S 40 T (\\) N
+(  pcopyin\(z[0:mm1*mm2*mm3]\)) N
+() S 8 T () S
+(for) K
+( \( i3 = 1; i3 <= mm3-1; i3++\) {) p n
+(            ) S
+(for) K
+( \( i2 = d2; i2 <= mm2-1; i2++\) {) p n
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = d1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = n12*\(2*i3-t3-1\)+n1*\(2*i2-d2-1\)+\(2*i1-d1-1\);) N
+() S 8 T () S 16 T (    u[j123] += ) N
+() S 8 T () S 16 T (      0.5*\(z[i123-1-mm1]+z[i123-1-mm1-mm12]\);) N
+() S 8 T () S 16 T (}) N
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = 1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = n12*\(2*i3-t3-1\)+n1*\(2*i2-d2-1\)+\(2*i1-t1-1\);) N
+() S 8 T () S 16 T (    u[j123] +=) N
+() S 8 T () S 16 T (      0.25*\(z[i123-mm1]+z[i123-1-mm1]) N
+() S 8 T () S 16 T () S 24 T (       +z[i123-mm1-mm12]+z[i123-1-mm1-mm12]\);) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (    ) S
+(for) K
+( \( i2 = 1; i2 <= mm2-1; i2++\) {) p n
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = d1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123 = n12*\(2*i3-t3-1\)+n1*\(2*i2-t2-1\)+\(2*i1-d1-1\);) N
+() S 8 T () S 16 T (    u[j123] +=) N
+() S 8 T () S 16 T (      0.25*\(z[i123-1]+z[i123-1-mm1]) N
+(mg_v08.c) (Page 14/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (7/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (15-16) 8
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T () S 16 T () S 24 T (       +z[i123-1-mm12]+z[i123-1-mm1-mm12]\);) N
+() S 8 T () S 16 T (}) N
+() S 8 T () S 16 T () S
+(for) K
+( \( i1 = 1; i1 <= mm1-1; i1++\) {) p n
+() S 8 T () S 16 T (  i123 = i1 + mm1*i2 + mm12*i3;) N
+() S 8 T () S 16 T (  j123=n12*\(2*i3-t3-1\)+n1*\(2*i2-t2-1\)+\(2*i1-t1-1\);) N
+() S 8 T () S 16 T (    u[j123] +=) N
+() S 8 T () S 16 T (      0.125*\(z[i123]+z[i123-mm1]) N
+() S 8 T () S 16 T () S 24 T () S 32 T (+z[i123-1]+z[i123-1-mm1]) N
+() S 8 T () S 16 T () S 24 T () S 32 T (+z[i123-mm12]+z[i123-mm1-mm12]) N
+() S 8 T () S 16 T () S 24 T () S 32 T (+z[i123-1-mm12]+z[i123-1-mm1-mm12]\);) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(#pragma) K
+( omp single) p n
+(  {) N
+(    ) S
+(if) K
+( \(debug_vec[0] >= 1 \) {) p n
+() S 8 T (rep_nrm\(z,mm1,mm2,mm3,") S
+(z: inter) str
+(",k-1\);) p n
+() S 8 T (rep_nrm\(u,n1,n2,n3,") S
+(u: inter) str
+(",k\);) p n
+(    }) N
+() N
+(    ) S
+(if) K
+( \( debug_vec[5] >= k \) {) p n
+() S 8 T (showall\(z,mm1,mm2,mm3\);) N
+() S 8 T (showall\(u,n1,n2,n3\);) N
+(    }) N
+(  } ) S
+(/* pragma omp single */) c n
+(}) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( norm2u3\() p
+(double) k
+( *r, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3,) p n
+() S 8 T () S 16 T (    ) S
+(double) k
+( *rnm2, ) p
+(double) k
+( *rnmu, ) p
+(int) k
+( nx, ) p
+(int) k
+( ny, ) p
+(int) k
+( nz\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     norm2u3 evaluates approximations to the L2 norm and the) N
+(c     uniform \(or L-infinity or Chebyshev\) norm, under the) N
+(c     assumption that the boundaries are periodic or zero.  Add the) N
+(c     boundaries in with half weight \(quarter weight on the edges) N
+(c     and eighth weight at the corners\) for inhomogeneous boundaries.) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(static) K
+( ) p
+(double) k
+( s = 0.0;) p n
+(    ) S
+(double) k
+( tmp;) p n
+(    ) S
+(int) k
+( i3, i2, i1, n;) p n
+(    ) S
+(double) k
+( p_s = 0.0, p_a = 0.0;) p n
+() N
+(    n = nx*ny*nz;) N
+() N
+(    ) S
+(int) k
+( i123;) p n
+() N
+(#pragma) K
+( omp ) p
+(for) K
+( private\(i123\)) p n
+(    ) S
+(// This is the big problem. If I can get this working, all) c n
+(    ) p
+(// other kernels are fine and I can introduce the data region.) c n
+(#pragma) K
+( acc parallel loop vector_length\(NTHREADS\) \\) p n
+(  private\(tmp,i123\) reduction\(+:p_s\) reduction\(max:p_a\) pcopyin\(r[0:n3*n2*n1]\)) N
+(    ) S
+(for) K
+( \(i3 = 1; i3 < n3-1; i3++\) {) p n
+() S 8 T () S
+(for) K
+( \(i2 = 1; i2 < n2-1; i2++\) {) p n
+(            ) S
+(for) K
+( \(i1 = 1; i1 < n1-1; i1++\) {) p n
+(mg_v08.c) (Page 15/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T (      i123 = i1 + n1*\(i2 + n2*i3\);) N
+() S 8 T (      p_s = p_s + r[i123] * r[i123];) N
+() S 8 T (      tmp = fabs\(r[i123]\);) N
+() S 8 T (      ) S
+(if) K
+( \(tmp > p_a\) p_a = tmp;) p n
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(    ) N
+(#pragma) K
+( omp critical) p n
+(    {) N
+() S 8 T (s += p_s;) N
+() S 8 T () S
+(if) K
+( \(p_a > *rnmu\) *rnmu = p_a;) p n
+(    }) N
+() N
+(#pragma) K
+( omp barrier    ) p n
+(#pragma) K
+( omp single) p n
+(    {) N
+() S 8 T (*rnm2 = sqrt\(s/\() S
+(double) k
+(\)n\);) p n
+() S 8 T (s = 0.0;) N
+(    }) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( rep_nrm\() p
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3,) p n
+() S 8 T () S 16 T (    ) S
+(char) k
+( *title, ) p
+(int) k
+( kk\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     report on norm) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(double) k
+( rnm2, rnmu;) p n
+() N
+() N
+(    norm2u3\(u,n1,n2,n3,&rnm2,&rnmu,nx[kk],ny[kk],nz[kk]\);) N
+(    printf\(") S
+( Level%2d in %8s: norms =%21.14e%21.14e\\n) str
+(",) p n
+() S 8 T (   kk, title, rnm2, rnmu\);) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( comm3\() p
+(double) k
+( *u, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( kk\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     comm3 organizes the communication on all borders ) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( i1, i2, i3;) p n
+() N
+(    ) S
+(int) k
+( n12 = n1*n2;) p n
+() N
+(    ) S
+(/* axis = 1 */) c n
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop gang vector_length\(NTHREADS\) pcopy\(u[0:n3*n2*n1]\)) p n
+(mg_v08.c) (Page 16/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (8/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (17-18) 9
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    ) p
+(for) K
+( \( i3 = 1; i3 < n3-1; i3++\) {) p n
+(#pragma) K
+( acc loop) p n
+(#pragma) K
+( novector) p n
+() S 8 T () S
+(for) K
+( \( i2 = 1; i2 < n2-1; i2++\) {) p n
+() S 8 T (  ) S
+(int) k
+( i23 = n1*\(i2+n2*i3\);) p n
+() S 8 T (    u[n1-1+i23] = u[1+i23];) N
+() S 8 T (    u[0+i23] = u[n1-2+i23];) N
+() S 8 T (}) N
+(    }) N
+() N
+(    ) S
+(/* axis = 2 */) c n
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop vector_length\(NTHREADS\) pcopy\(u[0:n3*n2*n1]\)) p n
+(    ) S
+(for) K
+( \( i3 = 1; i3 < n3-1; i3++\) {) p n
+(#pragma) K
+( acc loop) p n
+(#pragma) K
+( novector) p n
+() S 8 T () S
+(for) K
+( \( i1 = 0; i1 < n1; i1++\) {) p n
+() S 8 T (  ) S
+(int) k
+( i13 = i1 + n12*i3;) p n
+() S 8 T (  u[n1*\(n2-1\)+i13] = u[n2*1+i13];) N
+() S 8 T (  u[n1*0+i13] = u[n1*\(n2-2\)+i13];) N
+() S 8 T (}) N
+(    }) N
+() N
+(    ) S
+(/* axis = 3 */) c n
+(#pragma) K
+( omp ) p
+(for) K n
+(#pragma) S
+( acc parallel loop vector_length\(NTHREADS\) pcopy\(u[0:n3*n2*n1]\)) p n
+(    ) S
+(for) K
+( \( i2 = 0; i2 < n2; i2++\) {) p n
+(#pragma) K
+( acc loop) p n
+(#pragma) K
+( novector) p n
+() S 8 T () S
+(for) K
+( \( i1 = 0; i1 < n1; i1++\) {) p n
+() S 8 T (  ) S
+(int) k
+( i12 = i1 + n1*i2;) p n
+() S 8 T (  u[n12*\(n3-1\)+i12] = u[n12*1+i12];) N
+() S 8 T (  u[n12*0+i12] = u[n12*\(n3-2\)+i12];) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( zran3\() p
+(double) k
+( *z, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3, ) p
+(int) k
+( nx, ) p
+(int) k
+( ny, ) p
+(int) k
+( k\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     zran3  loads +1 at ten randomly chosen points,) N
+(c     loads -1 at a different ten random points,) N
+(c     and zero elsewhere.) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(#define) K
+( MM) p 16 T (10) N
+(#define) K
+() p 8 T (A) S 16 T (pow\(5.0,13\)) N
+(#define) K
+() p 8 T (X) S 16 T (314159265.e0    ) N
+(    ) N
+(    ) S
+(int) k
+( i0, m0, m1;) p n
+(    ) S
+(int) k
+( i1, i2, i3, d1, e1, e2, e3;) p n
+(    ) S
+(double) k
+( xx, x0, x1, a1, a2, ai;) p n
+() N
+(    ) S
+(double) k
+( ten[MM][2], best;) p n
+(    ) S
+(int) k
+( i, j1[MM][2], j2[MM][2], j3[MM][2];) p n
+(    ) S
+(int) k
+( jg[4][MM][2];) p n
+(mg_v08.c) (Page 17/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p n
+(    ) S
+(double) k
+( rdummy;) p n
+() N
+(    a1 = power\( A, nx \);) N
+(    a2 = power\( A, nx*ny \);) N
+() N
+(#if) K
+( 0) p n
+(#pragma) K
+( omp parallel) p n
+(  {) N
+(    zero3\(z,n1,n2,n3\);) N
+(  }) N
+(#else) K n
+(#pragma) S
+( omp parallel ) p
+(for) K
+( private\(i2, i1\)    ) p n
+(  ) S
+(for) K
+( \(i3 = 0;i3 < n3; i3++\) {) p n
+(    ) S
+(for) K
+( \(i2 = 0; i2 < n2; i2++\) {) p n
+(      ) S
+(for) K
+( \(i1 = 0; i1 < n1; i1++\) {) p n
+() S 8 T () S
+(int) k
+( i123 = i1 + n1*\(i2 + n2*i3\);) p n
+() S 8 T (z[i123] = 0.0;) N
+(      }) N
+(    }) N
+(  }) N
+(#endif) K n
+() p n
+(    i = is1-1+nx*\(is2-1+ny*\(is3-1\)\);) N
+() N
+(    ai = power\( A, i \);) N
+(    d1 = ie1 - is1 + 1;) N
+(    e1 = ie1 - is1 + 2;) N
+(    e2 = ie2 - is2 + 2;) N
+(    e3 = ie3 - is3 + 2;) N
+(    x0 = X;) N
+(    rdummy = randlc\( &x0, ai \);) N
+(    ) N
+(    ) S
+(for) K
+( \(i3 = 1; i3 < e3; i3++\) {) p n
+() S 8 T (x1 = x0;) N
+() S 8 T () S
+(for) K
+( \(i2 = 1; i2 < e2; i2++\) {) p n
+(            xx = x1;) N
+(            vranlc\( d1, &xx, A, &\(z[0+n1*\(i2 + n2*i3\)]\)\);) N
+(            rdummy = randlc\( &x1, a1 \);) N
+() S 8 T (}) N
+() S 8 T (rdummy = randlc\( &x0, a2 \);) N
+(    }) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c       call comm3\(z,n1,n2,n3\)) N
+(c       call showall\(z,n1,n2,n3\)) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     each processor looks for twenty candidates) N
+(c-------------------------------------------------------------------*/) N
+(    ) p
+(for) K
+( \(i = 0; i < MM; i++\) {) p n
+() S 8 T (ten[i][1] = 0.0;) N
+() S 8 T (j1[i][1] = 0;) N
+() S 8 T (j2[i][1] = 0;) N
+() S 8 T (j3[i][1] = 0;) N
+() S 8 T (ten[i][0] = 1.0;) N
+() S 8 T (j1[i][0] = 0;) N
+() S 8 T (j2[i][0] = 0;) N
+() S 8 T (j3[i][0] = 0;) N
+(    }) N
+(    ) S
+(for) K
+( \(i3 = 1; i3 < n3-1; i3++\) {) p n
+(mg_v08.c) (Page 18/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (9/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (19-20) 10
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T () S
+(for) K
+( \(i2 = 1; i2 < n2-1; i2++\) {) p n
+(            ) S
+(for) K
+( \(i1 = 1; i1 < n1-1; i1++\) {) p n
+() S 8 T (      ) S
+(int) k
+( i123 = i1 + n1*\(i2 + n2*i3\);) p n
+() S 8 T () S 16 T () S
+(if) K
+( \( z[i123] > ten[0][1] \) {) p n
+() S 8 T () S 16 T (    ten[0][1] = z[i123];) N
+() S 8 T () S 16 T (    j1[0][1] = i1;) N
+() S 8 T () S 16 T (    j2[0][1] = i2;) N
+() S 8 T () S 16 T (    j3[0][1] = i3;) N
+() S 8 T () S 16 T (    bubble\( ten, j1, j2, j3, MM, 1 \);) N
+() S 8 T () S 16 T (}) N
+() S 8 T () S 16 T () S
+(if) K
+( \( z[i123] < ten[0][0] \) {) p n
+() S 8 T () S 16 T (    ten[0][0] = z[i123];) N
+() S 8 T () S 16 T (    j1[0][0] = i1;) N
+() S 8 T () S 16 T (    j2[0][0] = i2;) N
+() S 8 T () S 16 T (    j3[0][0] = i3;) N
+() S 8 T () S 16 T (    bubble\( ten, j1, j2, j3, MM, 0 \);) N
+() S 8 T () S 16 T (}) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c     Now which of these are globally best?) N
+(c-------------------------------------------------------------------*/) N
+(    i1 = MM - 1;) p n
+(    i0 = MM - 1;) N
+(    ) S
+(for) K
+( \(i = MM - 1 ; i >= 0; i--\) {) p n
+(      ) S
+(int) k
+( j123 = j1[i1][1] + n1*\(j2[i1][1] + n2*j3[i1][1]\);) p n
+() S 8 T (best = z[j123];) N
+() S 8 T () S
+(if) K
+( \(best == z[j123]\) {) p n
+(            jg[0][i][1] = 0;) N
+(            jg[1][i][1] = is1 - 1 + j1[i1][1];) N
+(            jg[2][i][1] = is2 - 1 + j2[i1][1];) N
+(            jg[3][i][1] = is3 - 1 + j3[i1][1];) N
+(            i1 = i1-1;) N
+() S 8 T (} ) S
+(else) K
+( {) p n
+(            jg[0][i][1] = 0;) N
+(            jg[1][i][1] = 0;) N
+(            jg[2][i][1] = 0;) N
+(            jg[3][i][1] = 0;) N
+() S 8 T (}) N
+() S 8 T (ten[i][1] = best;) N
+(      j123 = j1[i0][0] + n1*\(j2[i0][0] + n2*j3[i0][0]\);) N
+() S 8 T (best = z[j123];) N
+() S 8 T () S
+(if) K
+( \(best == z[j123]\) {) p n
+(            jg[0][i][0] = 0;) N
+(            jg[1][i][0] = is1 - 1 + j1[i0][0];) N
+(            jg[2][i][0] = is2 - 1 + j2[i0][0];) N
+(            jg[3][i][0] = is3 - 1 + j3[i0][0];) N
+(            i0 = i0-1;) N
+() S 8 T (} ) S
+(else) K
+( {) p n
+(            jg[0][i][0] = 0;) N
+(            jg[1][i][0] = 0;) N
+(            jg[2][i][0] = 0;) N
+(            jg[3][i][0] = 0;) N
+() S 8 T (}) N
+() S 8 T (ten[i][0] = best;) N
+(    }) N
+(    m1 = i1+1;) N
+(    m0 = i0+1;) N
+() N
+(/*    printf\(" negative charges at"\);) c n
+(mg_v08.c) (Page 19/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    for \(i = 0; i < MM; i++\) {) c n
+() S 8 T (if \(i%5 == 0\) printf\("\\n"\);) N
+() S 8 T (printf\(" \(%3d,%3d,%3d\)", jg[1][i][0], jg[2][i][0], jg[3][i][0]\);) N
+(    }) N
+(    printf\("\\n positive charges at"\);) N
+(    for \(i = 0; i < MM; i++\) {) N
+() S 8 T (if \(i%5 == 0\) printf\("\\n"\);) N
+() S 8 T (printf\(" \(%3d,%3d,%3d\)", jg[1][i][1], jg[2][i][1], jg[3][i][1]\);) N
+(    }) N
+(    printf\("\\n small random numbers were\\n"\);) N
+(    for \(i = MM-1; i >= 0; i--\) {) N
+() S 8 T (printf\(" %15.8e", ten[i][0]\);) N
+(    }) N
+(    printf\("\\n and they were found on processor number\\n"\);) N
+(    for \(i = MM-1; i >= 0; i--\) {) N
+() S 8 T (printf\(" %4d", jg[0][i][0]\);) N
+(    }) N
+(    printf\("\\n large random numbers were\\n"\);) N
+(    for \(i = MM-1; i >= 0; i--\) {) N
+() S 8 T (printf\(" %15.8e", ten[i][1]\);) N
+(    }) N
+(    printf\("\\n and they were found on processor number\\n"\);) N
+(    for \(i = MM-1; i >= 0; i--\) {) N
+() S 8 T (printf\(" %4d", jg[0][i][1]\);) N
+(    }) N
+(    printf\("\\n"\);*/) N
+() p n
+(#if) K
+( 0) p n
+(#pragma) K
+( omp parallel ) p
+(for) K
+( private\(i2, i1\)    ) p n
+(for) K
+( \(i3 = 0; i3 < n3; i3++\) {) p n
+(  ) S
+(for) K
+( \(i2 = 0; i2 < n2; i2++\) {) p n
+(    ) S
+(for) K
+( \(i1 = 0; i1 < n1; i1++\) {) p n
+(      ) S
+(int) k
+( i123 = i1 + n1*\(i2+n2*i3\);) p n
+(      z[i123] = 0.0;) N
+(    }) N
+(  }) N
+( }) N
+(#else) K n
+(#pragma) S
+( omp parallel) p n
+(    {) N
+(      zero3\(z,n1,n2,n3\);) N
+(    }) N
+(#endif) K n
+() p n
+(#pragma) K
+( acc parallel pcopy\(z[0:n3*n2*n1]\) copyin\(jg\)) p n
+({) N
+(#pragma) K
+( acc loop) p n
+(    ) S
+(for) K
+( \(i = MM-1; i >= m0; i--\) {) p n
+(      ) S
+(int) k
+( j123 = j1[i][0] + n1*\(j2[i][0] + n2*j3[i][0]\);) p n
+() S 8 T (z[j123] = -1.0;) N
+(    }) N
+(#pragma) K
+( acc loop) p n
+(    ) S
+(for) K
+( \(i = MM-1; i >= m1; i--\) {) p n
+(      ) S
+(int) k
+( j123 = j1[i][1] + n1*\(j2[i][1] + n2*j3[i][1]\);) p n
+() S 8 T (z[j123] = 1.0;) N
+(    }) N
+(} ) S
+(// end acc parallel                                                         ) c n
+(#pragma) K
+( omp parallel    ) p n
+(    comm3\(z,n1,n2,n3,k\);) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c          call showall\(z,n1,n2,n3\)) N
+(mg_v08.c) (Page 20/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (10/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (21-22) 11
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(c-------------------------------------------------------------------*/) c n
+(}) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( showall\() p
+(double) k
+( *z, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( i1,i2,i3;) p n
+(    ) S
+(int) k
+( m1, m2, m3;) p n
+() N
+(#pragma) K
+( acc data pcopyin\(z[0:n3*n2*n1]\)) p n
+(    {) N
+(#pragma) K
+( acc update host\(z[0:n3*n2*n1]\)) p n
+(    }) N
+() N
+(    m1 = min\(n1,18\);) N
+(    m2 = min\(n2,14\);) N
+(    m3 = min\(n3,18\);) N
+() N
+(    printf\(") S
+(\\n) str
+("\);) p n
+(    ) S
+(for) K
+( \(i3 = 0; i3 < m3; i3++\) {) p n
+() S 8 T () S
+(for) K
+( \(i1 = 0; i1 < m1; i1++\) {) p n
+() S 8 T (    ) S
+(for) K
+( \(i2 = 0; i2 < m2; i2++\) {) p n
+() S 8 T (      ) S
+(int) k
+( i123 = i1+m1*\(i2+m2*i3\);) p n
+() S 8 T () S 16 T (printf\(") S
+(%6.3f) str
+(", z[i123]\);) p n
+() S 8 T (    }) N
+() S 8 T (    printf\(") S
+(\\n) str
+("\);) p n
+() S 8 T (}) N
+() S 8 T (printf\(") S
+( - - - - - - - \\n) str
+("\);) p n
+(    }) N
+(    printf\(") S
+(\\n) str
+("\);) p n
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(double) k
+( power\( ) p
+(double) k
+( a, ) p
+(int) k
+( n \) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     power  raises an integer, disguised as a double) N
+(c     precision real, to an integer power) N
+(c-------------------------------------------------------------------*/) N
+(    ) p
+(double) k
+( aj;) p n
+(    ) S
+(int) k
+( nj;) p n
+(    ) S
+(double) k
+( rdummy;) p n
+(    ) S
+(double) k
+( power;) p n
+() N
+(    power = 1.0;) N
+(    nj = n;) N
+(    aj = a;) N
+() N
+(    ) S
+(while) K
+( \(nj != 0\) {) p n
+() S 8 T () S
+(if) K
+(\( \(nj%2\) == 1 \) rdummy =  randlc\( &power, aj \);) p n
+() S 8 T (rdummy = randlc\( &aj, aj \);) N
+() S 8 T (nj = nj/2;) N
+(mg_v08.c) (Page 21/23) (Aug 31, 12 9:37) title
+border
+/v 1 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+(    }) p n
+(    ) N
+(    ) S
+(return) K
+( \(power\);) p n
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( bubble\( ) p
+(double) k
+( ten[M][2], ) p
+(int) k
+( j1[M][2], ) p
+(int) k
+( j2[M][2],) p n
+() S 8 T () S 16 T (    ) S
+(int) k
+( j3[M][2], ) p
+(int) k
+( m, ) p
+(int) k
+( ind \) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(/*--------------------------------------------------------------------) c n
+(c     bubble        does a bubble sort in direction dir) N
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(double) k
+( temp;) p n
+(    ) S
+(int) k
+( i, j_temp;) p n
+() N
+(    ) S
+(if) K
+( \( ind == 1 \) {) p n
+() S 8 T () S
+(for) K
+( \(i = 0; i < m-1; i++\) {) p n
+(            ) S
+(if) K
+( \( ten[i][ind] > ten[i+1][ind] \) {) p n
+() N
+() S 8 T () S 16 T (temp = ten[i+1][ind];) N
+() S 8 T () S 16 T (ten[i+1][ind] = ten[i][ind];) N
+() S 8 T () S 16 T (ten[i][ind] = temp;) N
+() N
+() S 8 T () S 16 T (j_temp = j1[i+1][ind];) N
+() S 8 T () S 16 T (j1[i+1][ind] = j1[i][ind];) N
+() S 8 T () S 16 T (j1[i][ind] = j_temp;) N
+() N
+() S 8 T () S 16 T (j_temp = j2[i+1][ind];) N
+() S 8 T () S 16 T (j2[i+1][ind] = j2[i][ind];) N
+() S 8 T () S 16 T (j2[i][ind] = j_temp;) N
+() N
+() S 8 T () S 16 T (j_temp = j3[i+1][ind];) N
+() S 8 T () S 16 T (j3[i+1][ind] = j3[i][ind];) N
+() S 8 T () S 16 T (j3[i][ind] = j_temp;) N
+() S 8 T (    } ) S
+(else) K
+( {) p n
+() S 8 T () S 16 T () S
+(return) K
+(;) p n
+() S 8 T (    }) N
+() S 8 T (}) N
+(    } ) S
+(else) K
+( {) p n
+() S 8 T () S
+(for) K
+( \(i = 0; i < m-1; i++\) {) p n
+(            ) S
+(if) K
+( \( ten[i][ind] < ten[i+1][ind] \) {) p n
+() N
+() S 8 T () S 16 T (temp = ten[i+1][ind];) N
+() S 8 T () S 16 T (ten[i+1][ind] = ten[i][ind];) N
+() S 8 T () S 16 T (ten[i][ind] = temp;) N
+() N
+() S 8 T () S 16 T (j_temp = j1[i+1][ind];) N
+() S 8 T () S 16 T (j1[i+1][ind] = j1[i][ind];) N
+() S 8 T () S 16 T (j1[i][ind] = j_temp;) N
+() N
+() S 8 T () S 16 T (j_temp = j2[i+1][ind];) N
+() S 8 T () S 16 T (j2[i+1][ind] = j2[i][ind];) N
+() S 8 T () S 16 T (j2[i][ind] = j_temp;) N
+() N
+() S 8 T () S 16 T (j_temp = j3[i+1][ind];) N
+() S 8 T () S 16 T (j3[i+1][ind] = j3[i][ind];) N
+(mg_v08.c) (Page 22/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (11/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+%%Page: (23) 12
+%%BeginPageSetup
+/pagesave save def
+sh 0 translate 90 rotate
+%%EndPageSetup
+iso1dict begin
+gsave
+llx lly 12 add translate
+/v 0 store
+/x0 x v get 3.362408 add sx cw mul add store
+/y0 y v get bfs th add sub store
+x0 y0 moveto
+() p 8 T () S 16 T (j3[i][ind] = j_temp;) N
+() S 8 T (    } ) S
+(else) K
+( {) p n
+() S 8 T () S 16 T () S
+(return) K
+(;) p n
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(static) K
+( ) p
+(void) k
+( zero3\() p
+(double) k
+( *z, ) p
+(int) k
+( n1, ) p
+(int) k
+( n2, ) p
+(int) k
+( n3\) {) p n
+() N
+(/*--------------------------------------------------------------------) c n
+(c-------------------------------------------------------------------*/) N
+() p n
+(    ) S
+(int) k
+( i1, i2, i3;) p n
+(#pragma) K
+( omp ) p
+(for) K
+(    ) p n
+(#pragma) K
+( acc parallel loop vector_length\(NTHREADS\) \\) p n
+(  pcopyout\(z[0:n3*n2*n1]\)) N
+(    ) S
+(for) K
+( \(i3 = 0;i3 < n3; i3++\) {) p n
+() S 8 T () S
+(for) K
+( \(i2 = 0; i2 < n2; i2++\) {) p n
+(            ) S
+(for) K
+( \(i1 = 0; i1 < n1; i1++\) {) p n
+() S 8 T (      ) S
+(int) k
+( i123 = i1 + n1*\(i2 + n2*i3\);) p n
+() S 8 T () S 16 T (z[i123] = 0.0;) N
+() S 8 T (    }) N
+() S 8 T (}) N
+(    }) N
+(}) N
+() N
+(/*---- end of program ------------------------------------------------*/) c n
+(mg_v08.c) (Page 23/23) (Aug 31, 12 9:37) title
+border
+grestore
+(Printed by Jing Gong) rhead
+(mg_v08.c) (12/12) (Friday September 13, 2013) footer
+end % of iso1dict
+pagesave restore
+showpage
+
+%%Trailer
+end
+%%EOF
