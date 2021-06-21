@@ -36,6 +36,14 @@ The lesson furthermore assumes that participants have some familiarity with the 
 - Logging in to supercomputers and using a bash terminal
 - Compiling C/C++ or Fortran codes using compilers and makefiles
 
+.. callout:: If you are new to OpenACC and/or CUDA
+
+   We encourage people without prior experience of OpenACC
+   and/or CUDA to go through our introductory lesson and work on the
+   exercises before attending this workshop. The materials are
+   avaliable online at https://enccs.github.io/OpenACC-CUDA-beginners/.
+
+  
 Tentative schedule
 ------------------
 
@@ -99,11 +107,11 @@ The lectures will present the OpenACC framework with three key steps namely anal
 CUDA lectures cover two main topics: how to optimize computational kernels for effitient execution on GPU hardware and how to explore the task-based parallelizm using streams and events.
 We will also briefly go through profiling tools that can help one to identify the computational bottleneck of the programm.
 
-The participants are assumed to have knowledge of C programming languages.
-Since participants will be using HPC clusters to run the examples, fluent operation in a Linux/Unix environment is assumed.
+Participants are assumed to have knowledge of the C programming
+language and some previous knowledge of OpenACC and CUDA. Since
+participants will be using HPC clusters to run the examples, fluent
+operation in a Linux/Unix environment is assumed.
 
-We encourage people without prior knowledge of OpenACC and CUDA to go through our introductory course.
-The materials are avaliable online at https://enccs.github.io/OpenACC-CUDA-beginners/ .
 
 See also
 --------
