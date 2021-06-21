@@ -3,11 +3,13 @@ Intermediate OpenACC/CUDA
 
 .. prereq::
 
-   Before attending this workshop, please make sure that you have
-   access to an HPC cluster with Nvidia GPUs and the PGI compiler.
-   Alternatively, you can use a cloud service like Google Colab which
-   offers access to GPUs in the cloud. See the :ref:`setup` section
-   for further details.
+   A cloud environment will be used for this workshop which requires
+   authentication through GitHub. Please go to https://github.com/
+   and apply for an account if needed.
+   
+   Alternatively, you can use an HPC cluster that you have access to
+   provided that it has Nvidia GPUs and the PGI compiler installed.
+  
 
 .. toctree::
    :maxdepth: 1
