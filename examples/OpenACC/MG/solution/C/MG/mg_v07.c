@@ -458,11 +458,12 @@ c-------------------------------------------------------------------*/
     int n12 = n1*n2;
     int i123;
 
-#pragma acc parallel loop vector_length(NTHREADS) private(r1,r2) \
+#pragma acc parallel loop collapse(2) vector_length(NTHREADS) private(r1,r2) \
   pcopy(u[0:n1*n2*n3]) \
   pcopyin(r[0:n1*n2*n3],c[0:4])
     for (i3 = 1; i3 < n3-1; i3++) {
 	for (i2 = 1; i2 < n2-1; i2++) {
+#pragma acc loop vector	  
             for (i1 = 0; i1 < n1; i1++) {
 	      i123 = i1 + n1*i2 + n12*i3;
 		r1[i1] = r[i123-n1] + r[i123+n1]
@@ -470,6 +471,7 @@ c-------------------------------------------------------------------*/
 		r2[i1] = r[i123-n1-n12] + r[i123+n1-n12]
 		    + r[i123-n1+n12] + r[i123+n1+n12];
 	    }
+#pragma acc loop vector	 
             for (i1 = 1; i1 < n1-1; i1++) {
 	      i123 = i1 + n1*i2 + n12*i3;
 		u[i123] = u[i123]
@@ -537,7 +539,7 @@ c       Undefine it to use the version with the temporary arrays inlined.*/
     int i123;
 
 #ifdef Resid_original
-#pragma acc parallel loop vector_length(NTHREADS) private(u1,u2) \
+#pragma acc parallel loop collapse(2) vector_length(NTHREADS) private(u1,u2) \
   pcopyin(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4])	\
   pcopyout(r[0:n1*n2*n3])
     for (i3 = 1; i3 < n3-1; i3++) {
@@ -565,7 +567,7 @@ c-------------------------------------------------------------------*/
 	}
     }
 #else /* Resid_original */
-#pragma acc parallel loop vector_length(NTHREADS)	\
+#pragma acc parallel loop collapse(3) vector_length(NTHREADS)	\
   pcopyin(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4])	\
   pcopyout(r[0:n1*n2*n3])
     for (i3 = 1; i3 < n3-1; i3++) {
@@ -667,10 +669,11 @@ c-------------------------------------------------------------------*/
     for (j3 = 1; j3 < m3j-1; j3++) {
 	i3 = 2*j3-d3;
 /*C        i3 = 2*j3-1*/
+
 	for (j2 = 1; j2 < m2j-1; j2++) {
             i2 = 2*j2-d2;
 /*C           i2 = 2*j2-1*/
-
+#pragma acc loop
             for (j1 = 1; j1 < m1j; j1++) {
 		i1 = 2*j1-d1;
 /*C             i1 = 2*j1-1*/
@@ -680,7 +683,7 @@ c-------------------------------------------------------------------*/
 		y1[i1] = r[i123] + r[i123+2*m12k]
 		    + r[i123+2*m1k] + r[i123+2*m1k+2*m12k];
 	    }
-
+#pragma acc loop  
             for (j1 = 1; j1 < m1j-1; j1++) {
 		i1 = 2*j1-d1;
 /*C             i1 = 2*j1-1*/
@@ -745,11 +748,12 @@ c      parameter( m=535 )
 
     if ( n1 != 3 && n2 != 3 && n3 != 3 ) {
       
-#pragma acc parallel loop vector_length(NTHREADS) private(z1,z2,z3)	\
+#pragma acc parallel loop collapse(2) vector_length(NTHREADS) private(z1,z2,z3) \
   pcopy(u[0:n1*n2*n3])			\
   pcopyin(z[0:mm1*mm2*mm3])
 	for (i3 = 0; i3 < mm3-1; i3++) {
             for (i2 = 0; i2 < mm2-1; i2++) {
+#pragma acc loop vector	      
 		for (i1 = 0; i1 < mm1; i1++) {
 		  i123 = i1 + mm1*i2 + mm12*i3;
 		    z1[i1] = z[i123+mm1] + z[i123];
@@ -808,10 +812,11 @@ c      parameter( m=535 )
             t3 = 0;
 	}
          
-#pragma acc parallel loop vector_length(NTHREADS) \
+#pragma acc parallel loop vector_length(NTHREADS)	\
   pcopy(u[0:n1*n2*n3])			\
   pcopyin(z[0:mm1*mm2*mm3])
 	for ( i3 = d3; i3 <= mm3-1; i3++) {
+#pragma acc loop vector
             for ( i2 = d2; i2 <= mm2-1; i2++) {
 		for ( i1 = d1; i1 <= mm1-1; i1++) {
 		  i123 = i1 + mm1*i2 + mm12*i3;
@@ -825,6 +830,7 @@ c      parameter( m=535 )
 		      0.5*(z[i123-mm1-mm12]+z[i123-1-mm1-mm12]);
 		}
 	    }
+#pragma acc loop vector	      	    
             for ( i2 = 1; i2 <= mm2-1; i2++) {
 		for ( i1 = d1; i1 <= mm1-1; i1++) {
 		  i123 = i1 + mm1*i2 + mm12*i3;
@@ -846,6 +852,7 @@ c      parameter( m=535 )
   pcopy(u[0:n1*n2*n3])			\
   pcopyin(z[0:mm1*mm2*mm3])
 	for ( i3 = 1; i3 <= mm3-1; i3++) {
+#pragma acc loop vector	  
             for ( i2 = d2; i2 <= mm2-1; i2++) {
 		for ( i1 = d1; i1 <= mm1-1; i1++) {
 		  i123 = i1 + mm1*i2 + mm12*i3;
@@ -861,6 +868,7 @@ c      parameter( m=535 )
 			       +z[i123-mm1-mm12]+z[i123-1-mm1-mm12]);
 		}
 	    }
+#pragma acc loop vector	  	    
 	    for ( i2 = 1; i2 <= mm2-1; i2++) {
 		for ( i1 = d1; i1 <= mm1-1; i1++) {
 		  i123 = i1 + mm1*i2 + mm12*i3;
@@ -1362,7 +1370,7 @@ static void zero3(double *z, int n1, int n2, int n3) {
 c-------------------------------------------------------------------*/
 
     int i1, i2, i3;
-#pragma acc parallel loop vector_length(NTHREADS) \
+#pragma acc parallel loop collapse(3) vector_length(NTHREADS) \
   pcopyout(z[0:n3*n2*n1])
     for (i3 = 0;i3 < n3; i3++) {
 	for (i2 = 0; i2 < n2; i2++) {

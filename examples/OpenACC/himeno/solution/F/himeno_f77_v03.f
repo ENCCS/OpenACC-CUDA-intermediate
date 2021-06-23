@@ -116,7 +116,7 @@ C**************************************************************
 !$acc data present(a,b,c,p,wrk1,bnd)
 
 #if 0
-!$acc parallel loop private(i,j,k) vector_length(NTPB)
+!$acc parallel loop collapse(3) private(i,j,k) vector_length(NTPB)
       do k=1,mkmax
          do j=1,mjmax
             do i=1,mimax
@@ -138,7 +138,7 @@ C**************************************************************
       enddo
 !$acc end parallel loop
 C
-!$acc parallel loop private(i,j,k) vector_length(NTPB)
+!$acc parallel loop collapse(3) private(i,j,k) vector_length(NTPB)
       do k=1,kmax
          do j=1,jmax
             do i=1,imax
@@ -160,7 +160,7 @@ C
       enddo
 !$acc end parallel loop
 #else
-!$acc parallel loop private(i,j,k) vector_length(NTPB)
+!$acc parallel loop collapse(3) private(i,j,k) vector_length(NTPB)
       do k=1,mkmax
          do j=1,mjmax
             do i=1,mimax
@@ -182,7 +182,7 @@ C
       enddo
 !$acc end parallel loop
 C
-!$acc parallel loop private(i,j,k) vector_length(NTPB)
+!$acc parallel loop collapse(3) private(i,j,k) vector_length(NTPB)
       do k=1,kmax
          do j=1,jmax
             do i=1,imax
@@ -222,7 +222,7 @@ C*************************************************************
 C
          gosa1= 0d0
 
-!$acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa1)
+!$acc parallel loop collapse(3) private(i,j,k,s0,ss) reduction(+:gosa1)
 !$acc& vector_length(NTPB)
          DO K=2,kmax-1
             DO J=2,jmax-1
@@ -245,7 +245,7 @@ C
          enddo
 !$acc end parallel loop
 
-!$acc parallel loop private(i,j,k) vector_length(NTPB)
+!$acc parallel loop collapse(3) private(i,j,k) vector_length(NTPB)
          DO K=2,kmax-1
             DO J=2,jmax-1
                DO I=2,imax-1

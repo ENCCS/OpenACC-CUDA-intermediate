@@ -172,7 +172,7 @@ void initmt()
 
 #pragma acc data present(a,b,c,p,wrk1,bnd)
 	{
-#pragma acc parallel loop
+#pragma acc parallel loop collapse(3)
   for(i=0 ; i<imax ; ++i)
     for(j=0 ; j<jmax ; ++j)
       for(k=0 ; k<kmax ; ++k){
@@ -191,7 +191,7 @@ void initmt()
         bnd[i][j][k]=0.0;
       }
 
-#pragma acc parallel loop
+#pragma acc parallel loop collapse(3)
   for(i=0 ; i<imax ; ++i)
     for(j=0 ; j<jmax ; ++j)
       for(k=0 ; k<kmax ; ++k){
@@ -222,7 +222,7 @@ real jacobi(int nn)
   for(n=0;n<nn;++n){
     gosa = 0.0;
 
-#pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
+#pragma acc parallel loop collapse(3) private(i,j,k,s0,ss) reduction(+:gosa)
     for(i=1 ; i<imax-1 ; ++i)
       for(j=1 ; j<jmax-1 ; ++j)
         for(k=1 ; k<kmax-1 ; ++k){
@@ -247,7 +247,7 @@ real jacobi(int nn)
           wrk2[i][j][k] = p[i][j][k] + omega * ss;
         }
 
-#pragma acc parallel loop
+#pragma acc parallel loop collapse(3)
     for(i=1 ; i<imax-1 ; ++i)
       for(j=1 ; j<jmax-1 ; ++j)
         for(k=1 ; k<kmax-1 ; ++k)
