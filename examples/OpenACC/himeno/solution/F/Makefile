@@ -27,5 +27,5 @@ himeno.x: himeno_f77.o
 	$(FC) $(FFLAGS) -o $@ $<
 
 clean:
-	$(RM) himeno_v*.x *.o *~
+	$(RM) himeno*.x *.o *~
 

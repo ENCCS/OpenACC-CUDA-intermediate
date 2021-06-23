@@ -30,5 +30,5 @@ himeno.x: himeno_C.o
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	$(RM) himeno_v*.x *.o *~
+	$(RM) himeno.x *.o *~
 
