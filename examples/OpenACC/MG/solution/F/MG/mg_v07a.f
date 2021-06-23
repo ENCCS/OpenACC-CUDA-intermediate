@@ -548,16 +548,18 @@ c---------------------------------------------------------------------
 
       if (timeron) call timer_start(T_psinv)
 
-!$acc parallel loop vector_length(NTHREADS)
+!$acc parallel loop collapse(2) vector_length(NTHREADS)
 !$acc& private(r1,r2) present(r,u,c)
       do i3=2,n3-1
          do i2=2,n2-1
+!$acc loop vector            
             do i1=1,n1
                r1(i1) = r(i1,i2-1,i3) + r(i1,i2+1,i3)
      >                + r(i1,i2,i3-1) + r(i1,i2,i3+1)
                r2(i1) = r(i1,i2-1,i3-1) + r(i1,i2+1,i3-1)
      >                + r(i1,i2-1,i3+1) + r(i1,i2+1,i3+1)
             enddo
+!$acc loop vector                        
             do i1=2,n1-1
                u(i1,i2,i3) = u(i1,i2,i3)
      >                     + c(0) * r(i1,i2,i3)
@@ -763,7 +765,7 @@ c---------------------------------------------------------------------
          i3 = 2*j3-d3
          do  j2=2,m2j-1
             i2 = 2*j2-d2
-
+!$acc loop vector   
             do j1=2,m1j
               i1 = 2*j1-d1
               x1(i1-1) = r(i1-1,i2-1,i3  ) + r(i1-1,i2+1,i3  )
@@ -771,7 +773,7 @@ c---------------------------------------------------------------------
               y1(i1-1) = r(i1-1,i2-1,i3-1) + r(i1-1,i2-1,i3+1)
      >                 + r(i1-1,i2+1,i3-1) + r(i1-1,i2+1,i3+1)
             enddo
-
+!$acc loop vector   
             do  j1=2,m1j-1
               i1 = 2*j1-d1
               y2 = r(i1,  i2-1,i3-1) + r(i1,  i2-1,i3+1)
@@ -840,35 +842,38 @@ c      parameter( m=535 )
       if (timeron) call timer_start(T_interp)
       if( n1 .ne. 3 .and. n2 .ne. 3 .and. n3 .ne. 3 ) then
 
-!$acc parallel loop vector_length(NTHREADS)
+!$acc parallel loop collapse(2) vector_length(NTHREADS)
 !$acc& private(z1,z2,z3) present(z,u)
          do  i3=1,mm3-1
             do  i2=1,mm2-1
-
+!$acc loop vector
                do i1=1,mm1
                   z1(i1) = z(i1,i2+1,i3) + z(i1,i2,i3)
                   z2(i1) = z(i1,i2,i3+1) + z(i1,i2,i3)
                   z3(i1) = z(i1,i2+1,i3+1) + z(i1,i2,i3+1) + z1(i1)
                enddo
-
+!$acc loop vector
                do  i1=1,mm1-1
                   u(2*i1-1,2*i2-1,2*i3-1)=u(2*i1-1,2*i2-1,2*i3-1)
      >                 +z(i1,i2,i3)
                   u(2*i1,2*i2-1,2*i3-1)=u(2*i1,2*i2-1,2*i3-1)
      >                 +0.5d0*(z(i1+1,i2,i3)+z(i1,i2,i3))
                enddo
+!$acc loop vector               
                do i1=1,mm1-1
                   u(2*i1-1,2*i2,2*i3-1)=u(2*i1-1,2*i2,2*i3-1)
      >                 +0.5d0 * z1(i1)
                   u(2*i1,2*i2,2*i3-1)=u(2*i1,2*i2,2*i3-1)
      >                 +0.25d0*( z1(i1) + z1(i1+1) )
                enddo
+!$acc loop vector               
                do i1=1,mm1-1
                   u(2*i1-1,2*i2-1,2*i3)=u(2*i1-1,2*i2-1,2*i3)
      >                 +0.5d0 * z2(i1)
                   u(2*i1,2*i2-1,2*i3)=u(2*i1,2*i2-1,2*i3)
      >                 +0.25d0*( z2(i1) + z2(i1+1) )
                enddo
+!$acc loop vector               
                do i1=1,mm1-1
                   u(2*i1-1,2*i2,2*i3)=u(2*i1-1,2*i2,2*i3)
      >                 +0.25d0* z3(i1)
