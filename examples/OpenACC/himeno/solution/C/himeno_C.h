@@ -1,0 +1,3 @@
+#define LARGE
+#undef DOUBLE_PRECISION
+
