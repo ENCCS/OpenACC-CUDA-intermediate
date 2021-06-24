@@ -1,0 +1,90 @@
+.. _openacc-profiling:
+
+Introduction to OpenACC
+=======================
+
+- Serial Computing on CPU
+
+.. image:: img/serial_openaccc.png
+
+- Porting to GPU
+
+.. image:: img/parallel_openacc.png
+
+What is OpenACC ?
+-----------------
+
+-  OpenACC defines a set of compiler directives that allow code regions
+   to be offloaded from a host CPU to be computed on a GPU
+
+   -  High level GPU programming
+   -  Large similarity to OpenMP directives
+
+-  Support for both C/C++ and Fortran bindings
+-  Extensive guides, tutorials, code samples and documentation on the OpenACC standard
+   can be found at `www.openacc.org <http://www.openacc.org>`_.
+
+OpenACC vs. CUDA or HIP
+-----------------------
+
+-  Why OpenACC and not `CUDA <https://en.wikipedia.org/wiki/CUDA>`_ / `HIP <https://en.wikipedia.org/wiki/GPUOpen#AMD_Boltzmann_Initiative>`_?
+
+   -  Easier to work with
+   -  Porting of existing software requires less work
+   -  Same code can be compiled to CPU and GPU versions easily
+
+-  Why CUDA/HIP and not OpenACC?
+
+   -  Get access to all features of the GPU hardware
+   -  More optimization possibilities
+
+
+
+-  The three key steps in porting to high performance accelerated code:
+
+   1. Analyze/Identify parallelism
+   2. Express data movement and parallelism
+   3. Optimize data movement and loop performance
+   4. Go back to 1!
+
+.. image:: img/development-cycle.png
+
+- *Analyze* your code to determine most likely places needing parallelization or optimization.
+
+- *Parallelize* your code by starting with the most time consuming parts and check for correctness.
+
+- *Optimize* your code to improve observed speed-up from parallelization.
+
+.. - One should generally start the process at the top with the analyze step. For complex applications, it's useful to have a profiling tool available to learn where your application is spending its execution time and to focus your efforts there.  Since our example code is quite a bit simpler than a full application, we'll skip profiling the code and simply analyze the code by reading it
+
+
+Profiling tools
+===============
+
+NVIDIA NVPROF profiler
+----------------------
+
+- NVPROF is a command-line profiler that is included in OpenACC and CUDA toolkits
+  - Can also do basic CPU profiling (CUDA 7.5 
+- GPU profiling capabilities
+  - High-level usage statistics
+  - Timeline collection
+  - Analysis metrics
+  - CPU example
+
+
+.. image:: img/himeno_stencil.png
+
+(https://blogs.fau.de/hager/archives/7850)
+
+.. image:: img/multigrid.png
+
+
+CPU example
+-----------
+
+.. code:: bash
+   $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
+
+
+

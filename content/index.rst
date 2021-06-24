@@ -13,8 +13,10 @@ Intermediate OpenACC/CUDA
 
 .. toctree::
    :maxdepth: 1
-   :caption: The lesson
+   :caption: Table of contents
 
+   1.02_openacc_profiling.rst
+   1.03_openacc_optimization.rst
 
 .. toctree::
    :maxdepth: 1
