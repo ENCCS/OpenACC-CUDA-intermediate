@@ -48,11 +48,12 @@ Loop dependencies and C
   - Can be a false dependency
 
 .. code:: c
- void adder(float *x, float *y, float *res) {
-    for (int i=0; i < VECSIZE; i++) {
-        res[i] = x[i] + y[i];
-    }
- }
+
+   void adder(float *x, float *y, float *res) {
+      for (int i=0; i < VECSIZE; i++) {
+          res[i] = x[i] + y[i];
+      }
+   }
 
 - What if res and x overlap in memory?
 
@@ -62,11 +63,12 @@ C99 restrict keyword
 C99 standard has restrict keyword which tells the compiler that the pointer is accessed so that it does not overlap with other accesses
 
 .. code:: c
- void adder(float restrict *x, float restrict *y, float restrict *res) {
-    for (int i=0; i < VECSIZE; i++) {
-        res[i] = x[i] + y[i];
-    }
- }
+
+   void adder(float restrict *x, float restrict *y, float restrict *res) {
+       for (int i=0; i < VECSIZE; i++) {
+           res[i] = x[i] + y[i];
+       }
+   }
 
 Loop independent clause
 -----------------------
@@ -76,17 +78,19 @@ Loop independent clause
  - You have to make sure that the iterations are independent!
 
 .. code:: c
- #pragma acc loop independent
- void adder(float *x, float *y, float *res) {
-    for (int i=0; i < VECSIZE; i++) {
-        res[i] = x[i] + y[i];
+
+   #pragma acc loop independent
+   void adder(float *x, float *y, float *res) {
+       for (int i=0; i < VECSIZE; i++) {
+           res[i] = x[i] + y[i];
+       }
     }
- }
 
 Loop directive
 --------------
 
 - Loop directive accepts several fine-tuning clauses
+
  - gang -- apply gang-level parallelism
  - worker -- apply worker-level parallelism
  - vector -- apply vector-level parallelism
@@ -101,26 +105,28 @@ Optimize loops: vector length
 - Because these parameters depend on the accelerator type, it is a good practice to add device_type clause
 
 .. code:: c   
- for (int i=0; i<imax; i++) {
-    ...
-    #pragma acc loop device_type(nvidia) vector(32)
-    for (int j=0; j<jmax; j++) {
-        ... /* No further loops in this block */
+
+   for (int i=0; i<imax; i++) {
+       ...
+       #pragma acc loop device_type(nvidia) vector(32)
+       for (int j=0; j<jmax; j++) {
+           ... /* No further loops in this block */
+       }
     }
- }
 
 Optimize loops: specifying workers
 ----------------------------------
 
 .. code:: c
- #pragma acc loop device_type(nvidia) gang worker(32)
- for (int i=0; i<imax; i++) {
-    ...
-    #pragma acc loop device_type(nvidia) vector(32)
-    for (int j=0; j<jmax; j++) {
-        ...
+
+   #pragma acc loop device_type(nvidia) gang worker(32)
+   for (int i=0; i<imax; i++) {
+       ...
+       #pragma acc loop device_type(nvidia) vector(32)
+       for (int j=0; j<jmax; j++) {
+           ...
+       }
     }
- }
 
  - Tell the compiler that when using NVIDIA device, the outer loop should be broken over gangs and workers with 32 workers per gang
 
@@ -129,39 +135,53 @@ Additional loop optimizations
 -----------------------------
 
 - collapse(N)
- - Same as in OpenMP, take the next N tightly nested loops and flatten them into a one loop
- - Can be beneficial when loops are small
- - Breaks the next loops into tiles (blocks) before parallelizing the loops
- - For certain memory access patterns this can improve data locality
+
+  - Same as in OpenMP, take the next N tightly nested loops and flatten them into a one loop
+  - Can be beneficial when loops are small
+  - Breaks the next loops into tiles (blocks) before parallelizing the loops
+  - For certain memory access patterns this can improve data locality
 
 What values should I try?
 -------------------------
 
 - Depends on the accelerator you are using
 - You can try out different combinations, but deterministic optimizations require good knowledge on the accelerator hardware
- - In the case of NVIDIA GPUs you should start with the NVVP results and refer to CUDA documentation
- - One hard-coded value: for NVIDIA GPUs the vector length should always be 32, which is the (current) warp size
+
+  - In the case of NVIDIA GPUs you should start with the NVVP results and refer to CUDA documentation
+  - One hard-coded value: for NVIDIA GPUs the vector length should always be 32, which is the (current) warp size
+
 
 Branches in device code
 -----------------------
 
 - 32 threads running the same instruction at the same time
 - Avoid branches based on thread id unless evenly dividable by 32
- - If (i%2) NO!
- - if (i%32) ok
+
+  - If (i%2) NO!
+  - if (i%32) ok
+
 - When unavoidable keep branches short
 
 Coalesced memory access
 -----------------------
 
-- Coalesced memory access - 32 threads accessing memory at the same time - 32 Byte access granularity - Overly simplified - Some cases 128 bytes access granularity - 128 byte coalesced accesses can improve performance
-![](img/memory-access.png)
+- Coalesced memory access
+
+  - 32 threads accessing memory at the same time
+  - 32 Byte access granularity
+  - Overly simplified
+  - Some cases 128 bytes access granularity
+  - 128 byte coalesced accesses can improve performance
+
+  ![](img/memory-access.png)
 
 Summary
 -------
 
 - Profiling is essential for optimization
- - NVPROF and NVVP for NVIDIA platform
+
+  - NVPROF and NVVP for NVIDIA platform
+
 - Loop optimizations
 - Branches
 - Memory access patterns
