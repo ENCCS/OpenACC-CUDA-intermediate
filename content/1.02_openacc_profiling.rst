@@ -94,6 +94,7 @@ CPU example
 -----------
 
 .. code:: bash
- $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
+
+   nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
 
 
