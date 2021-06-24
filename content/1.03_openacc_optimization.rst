@@ -1,10 +1,7 @@
 .. _openacc-optimization:
 
-Optimization
-============
-
-Compute optimizations
-^^^^^^^^^^^^^^^^^^^^^
+OpenACC: Optimization
+=====================
 
 - Data movement is and important part to optimize when using GPUs
     - Keeping data on the GPU as long as possible

@@ -1,7 +1,7 @@
 .. _openacc-profiling:
 
-Introduction to OpenACC
-=======================
+OpenACC: Analysis and Parallelization
+=====================================
 
 - Serial Computing on CPU
 
@@ -59,7 +59,16 @@ OpenACC vs. CUDA or HIP
 
 
 Profiling tools
-===============
+---------------
+
+- Serial Computing on CPU
+
+.. image:: img/serial_openaccc.png
+
+- Porting to GPU
+
+.. image:: img/parallel_openacc.png
+
 
 NVIDIA NVPROF profiler
 ----------------------
@@ -73,6 +82,7 @@ NVIDIA NVPROF profiler
   - CPU example
 
 
+
 .. image:: img/himeno_stencil.png
 
 (https://blogs.fau.de/hager/archives/7850)
@@ -84,7 +94,6 @@ CPU example
 -----------
 
 .. code:: bash
-   $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
-
+ $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
 
 
