@@ -65,7 +65,7 @@ Tentative schedule
      - OpenACC: Analysis and Parallelization
    * - 9:50 - 10:20
      - Break-out rooms
-   * - 10:30 - 10:40
+   * - 10:20 - 10:30
      - Break
    * - 10:30 - 10:50
      - OpenACC: Optimization
