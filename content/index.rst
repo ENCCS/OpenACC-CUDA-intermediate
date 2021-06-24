@@ -6,9 +6,12 @@ Intermediate OpenACC/CUDA
    A cloud environment will be used for this workshop which requires
    authentication through GitHub. Please go to https://github.com/
    and apply for an account if needed.
-   
+
    Alternatively, you can use an HPC cluster that you have access to
    provided that it has Nvidia GPUs and the PGI compiler installed.
+   Alternatively, you can use Google Colab.
+
+   Instructions can be found in the :ref:`setup` section.
   
 
 .. toctree::
