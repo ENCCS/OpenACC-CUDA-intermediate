@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "LESSON NAME"
+project = "Intermediate OpenACC/CUDA"
 copyright = "2021, The contributors"
 author = "The contributors"
 github_user = "ENCCS"
