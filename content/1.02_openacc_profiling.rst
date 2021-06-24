@@ -74,8 +74,11 @@ NVIDIA NVPROF profiler
 ----------------------
 
 - NVPROF is a command-line profiler that is included in OpenACC and CUDA toolkits
-  - Can also do basic CPU profiling (CUDA 7.5 
+
+  - Can also do basic CPU profiling (CUDA 7.5) 
+
 - GPU profiling capabilities
+
   - High-level usage statistics
   - Timeline collection
   - Analysis metrics
