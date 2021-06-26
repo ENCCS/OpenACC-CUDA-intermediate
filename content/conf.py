@@ -10,18 +10,18 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = "Intermediate OpenACC/CUDA"
-copyright = "2021, The contributors"
-author = "The contributors"
+copyright = "2020, EuroCC National Competence Centre Sweden"
+author = "Artem Zhmurov, Jing Gong, Kjartan Thor Wikfeldt"
 github_user = "ENCCS"
-github_repo_name = ""  # auto-detected from dirname if blank
+github_repo_name = "OpenACC-CUDA-intermediate"  # auto-detected from dirname if blank
 github_version = "main"
 conf_py_path = "/content/"  # with leading and trailing slash
 
@@ -105,24 +105,37 @@ html_context = {
 # }
 
 # add few new directives
-from sphinx_lesson.directives import _BaseCRDirective
+#from sphinx_lesson.directives import _BaseCRDirective
 
 
-class SignatureDirective(_BaseCRDirective):
-    extra_classes = ["toggle-shown", "dropdown"]
+#class SignatureDirective(_BaseCRDirective):
+#    extra_classes = ["toggle-shown", "dropdown"]
 
 
-class ParametersDirective(_BaseCRDirective):
-    extra_classes = ["dropdown"]
+#class ParametersDirective(_BaseCRDirective):
+#    extra_classes = ["dropdown"]
 
 
-class TypealongDirective(_BaseCRDirective):
-    extra_classes = ["toggle-shown", "dropdown"]
+#class TypealongDirective(_BaseCRDirective):
+#    extra_classes = ["toggle-shown", "dropdown"]
 
 
-DIRECTIVES = [SignatureDirective, ParametersDirective, TypealongDirective]
+# DIRECTIVES = [SignatureDirective, ParametersDirective, TypealongDirective]
+
+# Our own customisation
+from custom import DIRECTIVES, cuda_glossary
+
+# the epilog
+rst_epilog = f"""
+.. role:: red
+.. role:: blue
+.. _CMake: https://cmake.org/cmake/help/v3.19/
+
+{cuda_glossary()}
+"""
 
 
 def setup(app):
     for obj in DIRECTIVES:
         app.add_directive(obj.cssname(), obj)
+    app.add_css_file("overrides.css")

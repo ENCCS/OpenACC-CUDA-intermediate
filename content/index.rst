@@ -20,6 +20,8 @@ Intermediate OpenACC/CUDA
 
    1.02_openacc_profiling.rst
    1.03_openacc_optimization.rst
+   3.01_ParallelReduction1
+   3.02_TaskParallelism
 
 .. toctree::
    :maxdepth: 1
