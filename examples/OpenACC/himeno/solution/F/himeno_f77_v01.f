@@ -183,6 +183,7 @@ C*************************************************************
 C
          gosa1= 0.0
 
+!$acc data copyin(p,a,b,c,bnd,wrk1) copyout(wrk2)
 !$acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa1)
          DO K=2,kmax-1
             DO J=2,jmax-1
@@ -204,6 +205,7 @@ C
             enddo
          enddo
 !$acc end parallel loop
+!$acc end data
 C
          DO K=2,kmax-1
             DO J=2,jmax-1
