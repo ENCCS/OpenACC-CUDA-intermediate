@@ -3,17 +3,15 @@
 OpenACC: Optimization
 =====================
 
-- Data movement is and important part to optimize when using GPUs
+- Data movement is an important part to optimize when using GPUs
     - Keeping data on the GPU as long as possible
 - Getting the compiler to generate parallel code
-    - Addressing loop dependencies
+    - Addressing loop performance optimization
 - Data access and execution divergence are important for GPU performance
 
 
 Optimizing data movement
 ^^^^^^^^^^^^^^^^^^^^^^^^
-
--  Minimize the data transfer between host and device
 
 -  Constructs and clauses for
 
@@ -25,14 +23,15 @@ Optimizing data movement
    data clauses, i.e. copying to and from to the device is automatically
    performed
 
-(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v01.c*)
+-  Minimize the data transfer between host and device
 
- .. code:: c
-
+.. code:: c
  #pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
  for(i=1 ; i<imax-1 ; ++i)
 
- .. code:: c
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v01.c*)
+
+.. code:: c
  $ export PGI_ACC_TIME=1
  $ ./himeno.x
   jacobi  NVIDIA  devicenum=0
@@ -52,8 +51,7 @@ Optimizing data movement
         237: data copyout transfers: 518164
              device time(us): total=6,190,084 max=230 min=11 avg=11
  
-(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v02.c*)
- .. code:: c
+.. code:: c
  #pragma acc data copyin(a,b,c,bnd,wrk1) copy(p) create(wrk2)
   {
   for(n=0;n<nn;++n){
@@ -64,7 +62,9 @@ Optimizing data movement
       for(j=1 ; j<jmax-1 ; ++j)
         for(k=1 ; k<kmax-1 ; ++k){
 
- .. code:: c
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v02.c*)
+
+.. code:: c
  $ export PGI_ACC_TIME=1
  $ ./himeno.x
   jacobi  NVIDIA  devicenum=0
@@ -94,16 +94,15 @@ Optimizing data movement
              device time(us): total=39,987 max=435 min=389 avg=395
             elapsed time(us): total=42,470 max=467 min=412 avg=420
 
-
 Optimize Loop performance
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - The compiler is usually pretty good at choosing how to break up loop iterations to run well on parallel accelerators.
 
-- Sometimes we can obtain a little more performance by guiding the compiler to make specific choices.
+- Sometimes we can obtain more performance by guiding the compiler to make specific choices.
 
 Collapse Clause
-^^^^^^^^^^^^^^^
+---------------
 
 - collapse(N)
 
@@ -112,17 +111,17 @@ Collapse Clause
   - Breaks the next loops into tiles (blocks) before parallelizing the loops
   - For certain memory access patterns this can improve data locality
 
-# - The collapse clause allows us to transform a multi-dimensional loop nest into a single-dimensional loop. This process is helpful for increasing the overall length (which usually increases parallelism) of our loops, and will often help with memory locality.
+.. - The collapse clause allows us to transform a multi-dimensional loop nest into a single-dimensional loop. This process is helpful for increasing the overall length (which usually increases parallelism) of our loops, and will often help with memory locality.
 
-(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v03.c*)
-
- .. code:: c
+.. code:: c
  #pragma acc parallel loop collapse(3) private(i,j,k,s0,ss) reduction(+:gosa)
     for(i=1 ; i<imax-1 ; ++i)
       for(j=1 ; j<jmax-1 ; ++j)
         for(k=1 ; k<kmax-1 ; ++k){
 
- .. code:: c
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v03.c*)
+
+.. code:: c
  $ export PGI_ACC_TIME=1
  $ ./himeno.x
   jacobi  NVIDIA  devicenum=0
@@ -138,18 +137,57 @@ Collapse Clause
              device time(us): total=260,194 max=261 min=114 avg=117
             elapsed time(us): total=304,827 max=344 min=133 avg=137
  
+Loop directives
+---------------
 
-Loop directive
---------------
+- Loop directive accepts several fine-tuning clauses, OpenACC has three levels of parallelism
 
-- Loop directive accepts several fine-tuning clauses
-
- - gang -- apply gang-level parallelism
- - worker -- apply worker-level parallelism
- - vector -- apply vector-level parallelism
- - seq -- run sequentially
+ - ``gang`` -- have one or more workers that share resources, such as streaming multiprocessor - Multiple gangs work independently
+ - ``worker`` -- compute a vector
+ - ``vector`` -- threads work in SIMT (SIMD) fashion 
+ - ``seq`` -- run sequentially
 
 - Multiple levels can be applied to a loop nest, but they have to be applied in top-down order
+- By default, when programming for a GPU, gang and vector parallelism is automatically applied.
+
+.. image:: img/gang_worker_vector.png
+
+
+This image represents a single gang. When parallelizing our for loops, the loop iterations will be broken up evenly among a number of gangs. Each gang will contain a number of threads. These threads are organized into blocks. A worker is a row of threads. In the above graphic, there are 3 workers, which means that there are 3 rows of threads. The vector refers to how long each row is. So in the above graphic, the vector is 8, because each row is 8 threads long.
+
+
+.. code :: c
+
+ #pragma acc parallel num_gangs( 2 ) num_workers( 4 ) vector_length( 32 )
+ {
+    #pragma acc loop gang worker
+    for(int i = 0; i < N; i++)
+    {
+        #pragma acc loop vector
+        for(int j = 0; j < M; j++)
+        {
+            < loop code >
+        }
+    }
+ }
+
+- Avoid wasting Threads, when parallelizing small arrays, you have to be careful that the number of threads within your vector is not larger than the number of loop iterations.
+
+.. code :: c
+
+ #pragma acc kernels loop gang
+ for(int i = 0; i < 1000000000; i++)
+ {
+    #pragma acc loop vector(256)
+    for(int j = 0; j < 32; j++)
+    {
+        < loop code >
+    }
+ }
+
+- The Rule of 32 (Warps): The general rule of thumb for programming for NVIDIA GPUs is to always ensure that your vector length is a multiple of 32 (which means 32, 64, 96, 128, ... 512, ... 1024... etc.). This is because NVIDIA GPUs are optimized to use warps. Warps are groups of 32 threads that are executing the same computer instruction.
+
+(refer to *examples/OpenACC/MG/solution/C/MG/mg_v0[1-8].c*)
 
 What values should I try?
 -------------------------
@@ -161,53 +199,40 @@ What values should I try?
   - One hard-coded value: for NVIDIA GPUs the vector length should always be 32, which is the (current) warp size
 
 
-Optimize loops: vector length
------------------------------
+Device data interoperability
+----------------------------
 
-- Tell the compiler that when using NVIDIA device it should use a vector length of 32 on the innermost loop
-- Because these parameters depend on the accelerator type, it is a good practice to add device_type clause
+- OpenACC includes methods to access to device data pointers
+- Device data pointers can be used to interoperate with libraries and other programming techniques available for accelerator devices
+  - CUDA kernels and libraries
+  - CUDA-aware MPI libraries
 
-.. code:: c   
+Calling CUDA-kernel from OpenACC-program
+----------------------------------------
 
-   for (int i=0; i<imax; i++) {
-       ...
-       #pragma acc loop device_type(nvidia) vector(32)
-       for (int j=0; j<jmax; j++) {
-           ... /* No further loops in this block */
-       }
-    }
-
-Optimize loops: specifying workers
-----------------------------------
+- Define a device address to be available on the host
+  - C/C++: **#pragma acc host_data [clause]**
+  - Fortran: **!$acc host_data [clause]**
+- Only a single clause is allowed: C/C++, Fortran: use_device(var-list)
+- Within the construct, all the variables in var-list are referred to by using their device addresses
 
 .. code:: c
-
-   #pragma acc loop device_type(nvidia) gang worker(32)
-   for (int i=0; i<imax; i++) {
-       ...
-       #pragma acc loop device_type(nvidia) vector(32)
-       for (int j=0; j<jmax; j++) {
-           ...
-       }
+ #pragma acc data present(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4],r[0:n1*n2*n3])
+    {
+ #pragma acc host_data use_device(u,v,r,a)
+      {
+        resid_cuda(u,v,r,&n1,&n2,&n3,a);
+      }
     }
 
- - Tell the compiler that when using NVIDIA device, the outer loop should be broken over gangs and workers with 32 workers per gang
+(refer to *examples/OpenACC/MG/solution/C/MG/mg_v08.c*)
 
-
-Additional loop optimizations
------------------------------
-
-Branches in device code
------------------------
-
-- 32 threads running the same instruction at the same time
-- Avoid branches based on thread id unless evenly dividable by 32
-
-  - If (i%2) NO!
-  - if (i%32) ok
-
-- When unavoidable keep branches short
-
+.. code:: c
+  extern "C" void resid_cuda(double *u, double *v, double *r,
+                             int *n1, int *n2, int *n3,
+                             double *a)
+ 
+(refer to *examples/OpenACC/MG/solution/C/MG/mg_kernels.cu*)
 
 Summary
 -------
