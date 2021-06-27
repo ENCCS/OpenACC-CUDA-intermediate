@@ -25,13 +25,15 @@ Optimizing data movement
 
 -  Minimize the data transfer between host and device
 
-.. code:: c
+.. code :: c 
+
  #pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
  for(i=1 ; i<imax-1 ; ++i)
 
 (refer to *examples/OpenACC/himeno/solution/C/himeno_C_v01.c*)
 
-.. code:: c
+.. code :: c
+
  $ export PGI_ACC_TIME=1
  $ ./himeno.x
   jacobi  NVIDIA  devicenum=0
@@ -51,7 +53,8 @@ Optimizing data movement
         237: data copyout transfers: 518164
              device time(us): total=6,190,084 max=230 min=11 avg=11
  
-.. code:: c
+.. code :: c
+
  #pragma acc data copyin(a,b,c,bnd,wrk1) copy(p) create(wrk2)
   {
   for(n=0;n<nn;++n){
@@ -64,7 +67,8 @@ Optimizing data movement
 
 (refer to *examples/OpenACC/himeno/solution/C/himeno_C_v02.c*)
 
-.. code:: c
+.. code :: c
+
  $ export PGI_ACC_TIME=1
  $ ./himeno.x
   jacobi  NVIDIA  devicenum=0
@@ -113,7 +117,8 @@ Collapse Clause
 
 .. - The collapse clause allows us to transform a multi-dimensional loop nest into a single-dimensional loop. This process is helpful for increasing the overall length (which usually increases parallelism) of our loops, and will often help with memory locality.
 
-.. code:: c
+.. code :: c
+
  #pragma acc parallel loop collapse(3) private(i,j,k,s0,ss) reduction(+:gosa)
     for(i=1 ; i<imax-1 ; ++i)
       for(j=1 ; j<jmax-1 ; ++j)
@@ -121,7 +126,8 @@ Collapse Clause
 
 (refer to *examples/OpenACC/himeno/solution/C/himeno_C_v03.c*)
 
-.. code:: c
+.. code :: c
+
  $ export PGI_ACC_TIME=1
  $ ./himeno.x
   jacobi  NVIDIA  devicenum=0

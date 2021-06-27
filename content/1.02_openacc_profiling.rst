@@ -85,16 +85,6 @@ Analysis and Parallelization
   - GPU profiling capabilities: High-level usage statistics, Timeline collection, Analysis metrics
   - basic CPU sampling
 
-.. code:: bash
-
- $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./himeno.x
- ======== CPU profiling result (top down):
- Time(%)      Time  Name
- 92.67%    18.96s  jacobi
-  5.77%     1.18s  __c_mcopy4_avx
-  1.56%     320ms  initmt
-  0.10%      20ms    __memset_avx2_unaligned_erms
-
 
 .. typealong:: himeno code
 
@@ -110,6 +100,16 @@ Analysis and Parallelization
             .. literalinclude:: ../examples/OpenACC/himeno/F/himeno_f77.f
                 :language: fortran
 
+
+.. code:: bash
+
+ $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./himeno.x
+ ======== CPU profiling result (top down):
+ Time(%)      Time  Name
+ 92.67%    18.96s  jacobi
+  5.77%     1.18s  __c_mcopy4_avx
+  1.56%     320ms  initmt
+  0.10%      20ms    __memset_avx2_unaligned_erms
 
 OpenACC data model
 ^^^^^^^^^^^^^^^^^^
