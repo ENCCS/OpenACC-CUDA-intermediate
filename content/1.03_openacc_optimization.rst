@@ -29,8 +29,11 @@ Optimizing data movement
 
 .. code :: c 
 
+  for(n=0;n<nn;++n){
+   gosa = 0.0;
+
  #pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
- for(i=1 ; i<imax-1 ; ++i)
+    for(i=1 ; i<imax-1 ; ++i)
 
 (refer to *examples/OpenACC/himeno/solution/C/himeno_C_v01.c*)
 
@@ -38,6 +41,12 @@ Optimizing data movement
 
  $ export PGI_ACC_TIME=1
  $ cp himeno_C_v01.c himeno_C.c && make
+  ...
+     215, Generating implicit copyout(wrk2[1:imax-2][1:jmax-2][1:kmax-2]) [if not already present]
+         Generating implicit copyin(wrk1[1:imax-2][1:jmax-2][1:kmax-2]) [if not already present]
+         Generating implicit copy(gosa) [if not already present]
+         Generating implicit copyin(b[1:imax-2][1:jmax-2][1:kmax-2][:],a[1:imax-2][1:jmax-2][1:kmax-2][:],bnd[1:imax-2][1:jmax-2][1:kmax-2],p[:imax][:jmax][:kmax],c[1:imax-2][1:jmax-2][1:kmax-2][:]) [if not already present]
+
  $ sbatch run_himeno.sh
   jacobi  NVIDIA  devicenum=0
     time(us): 26,955,638
