@@ -134,13 +134,14 @@ OpenACC execution model
 -  OpenACC includes two different approaches for defining parallel
    regions
 
-   -  ``parallel`` defines a region to be executed on an accelerator.
-      Work sharing *parallelism* has to be defined *manually*. Good
-      tuning prospects.
    -  ``kernels`` defines a region to be transferred into a series of
       kernels to be executed in *sequence* on an accelerator. Work
       sharing parallelism is defined *automatically* for the separate
       kernels, but tuning prospects limited.
+
+   -  ``parallel`` defines a region to be executed on an accelerator.
+      Work sharing *parallelism* has to be defined *manually*. Good
+      tuning prospects. 
 
 -  With similar work sharing, both can perform equally well
 

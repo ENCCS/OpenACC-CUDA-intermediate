@@ -10,81 +10,134 @@ OpenACC: Optimization
 - Data access and execution divergence are important for GPU performance
 
 
-Loop dependencies
-^^^^^^^^^^^^^^^^^^
+Optimizing data movement
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: c
+-  Minimize the data transfer between host and device
 
- /* FLOW dependency, k>0 */
- for (int i=0; i<N; i++)
-    A[i] = A[i-k]+1;
- /* ANTI dependency, k>0 */
- for (int i=0; i<N; i++)
-    A[i] = A[i+k]+1;
- ! FLOW dependency, k>0
- do i=0, N
-    a(i) = a(i-k) + 1;
- end do
- ! ANTI dependency, k>0
- do i=0, N
-    a(i) = a(i+k) + 1;
- end do
+-  Constructs and clauses for
 
-Loop dependencies
------------------
+   -  defining the variables on the device
+   -  transferring data to/from the device
 
-- Dependencies disable vectorization, which is essential for good performance 
-- Rewrite the loops so that the dependency is removed
-- Try to split the loop, use temporary array, etc.
-- Some dependencies can not be removed
-  - Try a different algorithm?
+-  All variables used inside the ``parallel`` or ``kernels`` region will
+   be treated as *implicit* variables if they are not present in any
+   data clauses, i.e. copying to and from to the device is automatically
+   performed
+
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v01.c*)
+
+ .. code:: c
+
+ #pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
+ for(i=1 ; i<imax-1 ; ++i)
+
+ .. code:: c
+ $ export PGI_ACC_TIME=1
+ $ ./himeno.x
+  jacobi  NVIDIA  devicenum=0
+    time(us): 24,912,728
+    215: compute region reached 4 times
+        215: kernel launched 4 times
+            grid: [510]  block: [128]
+             device time(us): total=6,735 max=1,693 min=1,678 avg=1,683
+            elapsed time(us): total=6,998 max=1,763 min=1,741 avg=1,749
+        215: reduction kernel launched 4 times
+            grid: [1]  block: [256]
+             device time(us): total=17 max=5 min=4 avg=4
+            elapsed time(us): total=104 max=28 min=25 avg=26
+    215: data region reached 8 times
+        215: data copyin transfers: 3115092
+             device time(us): total=18,715,892 max=787 min=4 avg=6
+        237: data copyout transfers: 518164
+             device time(us): total=6,190,084 max=230 min=11 avg=11
+ 
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v02.c*)
+ .. code:: c
+ #pragma acc data copyin(a,b,c,bnd,wrk1) copy(p) create(wrk2)
+  {
+  for(n=0;n<nn;++n){
+    gosa = 0.0;
+
+ #pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
+    for(i=1 ; i<imax-1 ; ++i)
+      for(j=1 ; j<jmax-1 ; ++j)
+        for(k=1 ; k<kmax-1 ; ++k){
+
+ .. code:: c
+ $ export PGI_ACC_TIME=1
+ $ ./himeno.x
+  jacobi  NVIDIA  devicenum=0
+    time(us): 389,951
+    212: data region reached 4 times
+        212: data copyin transfers: 220
+             device time(us): total=148,455 max=4,814 min=60 avg=674
+        247: data copyout transfers: 18
+             device time(us): total=30,017 max=2,130 min=163 avg=1,667
+    217: compute region reached 101 times
+        217: kernel launched 101 times
+            grid: [510]  block: [128]
+             device time(us): total=168,823 max=1,734 min=1,656 avg=1,671
+            elapsed time(us): total=171,048 max=1,761 min=1,676 avg=1,693
+        217: reduction kernel launched 101 times
+            grid: [1]  block: [256]
+             device time(us): total=560 max=7 min=5 avg=5
+            elapsed time(us): total=2,861 max=209 min=24 avg=28
+    217: data region reached 202 times
+        217: data copyin transfers: 101
+             device time(us): total=589 max=14 min=5 avg=5
+        239: data copyout transfers: 101
+             device time(us): total=1,520 max=24 min=13 avg=15
+    242: compute region reached 101 times
+        242: kernel launched 101 times
+            grid: [510]  block: [128]
+             device time(us): total=39,987 max=435 min=389 avg=395
+            elapsed time(us): total=42,470 max=467 min=412 avg=420
 
 
-Loop dependencies and C
------------------------
+Optimize Loop performance
+-------------------------
 
-- C pointers are hard for the compiler to follow
-  - Compiler will not know, if a loop can be vectorized safely, if a function has pointer arguments
-  - Can be a false dependency
+- The compiler is usually pretty good at choosing how to break up loop iterations to run well on parallel accelerators.
 
-.. code:: c
+- Sometimes we can obtain a little more performance by guiding the compiler to make specific choices.
 
-   void adder(float *x, float *y, float *res) {
-      for (int i=0; i < VECSIZE; i++) {
-          res[i] = x[i] + y[i];
-      }
-   }
+Collapse Clause
+^^^^^^^^^^^^^^^
 
-- What if res and x overlap in memory?
+- collapse(N)
 
-C99 restrict keyword
-^^^^^^^^^^^^^^^^^^^^
+  - Same as in OpenMP, take the next N tightly nested loops and flatten them into a one loop
+  - Can be beneficial when loops are small
+  - Breaks the next loops into tiles (blocks) before parallelizing the loops
+  - For certain memory access patterns this can improve data locality
 
-C99 standard has restrict keyword which tells the compiler that the pointer is accessed so that it does not overlap with other accesses
+# - The collapse clause allows us to transform a multi-dimensional loop nest into a single-dimensional loop. This process is helpful for increasing the overall length (which usually increases parallelism) of our loops, and will often help with memory locality.
 
-.. code:: c
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v03.c*)
 
-   void adder(float restrict *x, float restrict *y, float restrict *res) {
-       for (int i=0; i < VECSIZE; i++) {
-           res[i] = x[i] + y[i];
-       }
-   }
+ .. code:: c
+ #pragma acc parallel loop collapse(3) private(i,j,k,s0,ss) reduction(+:gosa)
+    for(i=1 ; i<imax-1 ; ++i)
+      for(j=1 ; j<jmax-1 ; ++j)
+        for(k=1 ; k<kmax-1 ; ++k){
 
-Loop independent clause
------------------------
-
-- OpenACC independent clause tells to the compiler that loop iterations are independent
- - Overrides any compiler dependency analysis
- - You have to make sure that the iterations are independent!
-
-.. code:: c
-
-   #pragma acc loop independent
-   void adder(float *x, float *y, float *res) {
-       for (int i=0; i < VECSIZE; i++) {
-           res[i] = x[i] + y[i];
-       }
-    }
+ .. code:: c
+ $ export PGI_ACC_TIME=1
+ $ ./himeno.x
+  jacobi  NVIDIA  devicenum=0
+    time(us): 4,062,105
+    221: data region reached 4 times
+    226: compute region reached 2214 times
+        226: kernel launched 2214 times
+            grid: [65535]  block: [128]
+             device time(us): total=3,252,373 max=1,560 min=1,465 avg=1,469
+            elapsed time(us): total=3,296,349 max=1,664 min=1,484 avg=1,488
+        226: reduction kernel launched 2214 times
+            grid: [1]  block: [256]
+             device time(us): total=260,194 max=261 min=114 avg=117
+            elapsed time(us): total=304,827 max=344 min=133 avg=137
+ 
 
 Loop directive
 --------------
@@ -97,6 +150,16 @@ Loop directive
  - seq -- run sequentially
 
 - Multiple levels can be applied to a loop nest, but they have to be applied in top-down order
+
+What values should I try?
+-------------------------
+
+- Depends on the accelerator you are using
+- You can try out different combinations, but deterministic optimizations require good knowledge on the accelerator hardware
+
+  - In the case of NVIDIA GPUs you should start with the NVVP results and refer to CUDA documentation
+  - One hard-coded value: for NVIDIA GPUs the vector length should always be 32, which is the (current) warp size
+
 
 Optimize loops: vector length
 -----------------------------
@@ -134,23 +197,6 @@ Optimize loops: specifying workers
 Additional loop optimizations
 -----------------------------
 
-- collapse(N)
-
-  - Same as in OpenMP, take the next N tightly nested loops and flatten them into a one loop
-  - Can be beneficial when loops are small
-  - Breaks the next loops into tiles (blocks) before parallelizing the loops
-  - For certain memory access patterns this can improve data locality
-
-What values should I try?
--------------------------
-
-- Depends on the accelerator you are using
-- You can try out different combinations, but deterministic optimizations require good knowledge on the accelerator hardware
-
-  - In the case of NVIDIA GPUs you should start with the NVVP results and refer to CUDA documentation
-  - One hard-coded value: for NVIDIA GPUs the vector length should always be 32, which is the (current) warp size
-
-
 Branches in device code
 -----------------------
 
@@ -162,18 +208,6 @@ Branches in device code
 
 - When unavoidable keep branches short
 
-Coalesced memory access
------------------------
-
-- Coalesced memory access
-
-  - 32 threads accessing memory at the same time
-  - 32 Byte access granularity
-  - Overly simplified
-  - Some cases 128 bytes access granularity
-  - 128 byte coalesced accesses can improve performance
-
-  ![](img/memory-access.png)
 
 Summary
 -------
@@ -182,7 +216,4 @@ Summary
 
   - NVPROF and NVVP for NVIDIA platform
 
-- Loop optimizations
-- Branches
-- Memory access patterns
-
+- Data and Loop optimizations
