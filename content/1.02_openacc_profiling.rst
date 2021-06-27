@@ -3,14 +3,6 @@
 OpenACC: Analysis and Parallelization
 =====================================
 
-- Serial Computing on CPU
-
-.. image:: img/serial_openaccc.png
-
-- Porting to GPU
-
-.. image:: img/parallel_openacc.png
-
 What is OpenACC ?
 -----------------
 
@@ -39,7 +31,8 @@ OpenACC vs. CUDA or HIP
    -  More optimization possibilities
 
 
-
+Steps in porting code to GPUs
+-----------------------------
 -  The three key steps in porting to high performance accelerated code:
 
    1. Analyze/Identify parallelism
@@ -58,8 +51,26 @@ OpenACC vs. CUDA or HIP
 .. - One should generally start the process at the top with the analyze step. For complex applications, it's useful to have a profiling tool available to learn where your application is spending its execution time and to focus your efforts there.  Since our example code is quite a bit simpler than a full application, we'll skip profiling the code and simply analyze the code by reading it
 
 
-Profiling tools
----------------
+
+The Himeno stencil benchmark
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Solving Poisson’s equation for incompressible fluid by the Jacobi iteration method.
+
+.. image:: img/himeno_stencil.png
+
+(https://blogs.fau.de/hager/archives/7850)
+
+The NAS parallel benchmark MG
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Multi-Grid on a sequence of meshes for computational fluid dynamics applications
+
+.. image:: img/multigrid.png
+(https://developer.nvidia.com/blog/high-performance-geometric-multi-grid-gpu-acceleration/)
+
+Analysis and Parallelization
+----------------------------
 
 - Serial Computing on CPU
 
@@ -69,35 +80,67 @@ Profiling tools
 
 .. image:: img/parallel_openacc.png
 
+- NVIDIA nvprof provides a simple interface to collect on a target without using the GUI. (new NSight system)
 
-NVIDIA NVPROF profiler
-----------------------
-
-- NVPROF is a command-line profiler that is included in OpenACC and CUDA toolkits
-
-  - Can also do basic CPU profiling (CUDA 7.5) 
-
-- GPU profiling capabilities
-
-  - High-level usage statistics
-  - Timeline collection
-  - Analysis metrics
-  - CPU example
-
-
-
-.. image:: img/himeno_stencil.png
-
-(https://blogs.fau.de/hager/archives/7850)
-
-.. image:: img/multigrid.png
-
-
-CPU example
------------
+  - GPU profiling capabilities: High-level usage statistics, Timeline collection, Analysis metrics
+  - basic CPU sampling
 
 .. code:: bash
 
-   nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
+ $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./himeno.x
+ ======== CPU profiling result (top down):
+ Time(%)      Time  Name
+ 92.67%    18.96s  jacobi
+  5.77%     1.18s  __c_mcopy4_avx
+  1.56%     320ms  initmt
+  0.10%      20ms    __memset_avx2_unaligned_erms
 
+
+.. typealong:: himeno code
+
+    .. tabs::
+
+        .. tab:: c
+
+            .. literalinclude:: ../examples/OpenACC/himeno/C/himeno_C.c
+                :language: c
+
+        .. tab:: fortran
+
+            .. literalinclude:: ../examples/OpenACC/himeno/F/himeno_f77.f
+                :language: fortran
+
+
+OpenACC data model
+^^^^^^^^^^^^^^^^^^
+-  Define a region with data declared in the device memory
+
+   -  C/C++: ``#pragma acc data [clauses]`` 
+   -  Fortran: ``!$acc data [clauses]``
+   -  clauses can be ``copy``, ``copyin``, ``copyout``, and ``present``
+
+-  Data transfers take place
+
+   -  from the **host** to the **device** upon entry to the region
+   -  from the **device** to the **host** upon exit from the region
+
+-  Functionality defined by *data clauses*
+-  *Data clauses* can also be used in ``kernels`` and ``parallel``
+   constructs
+
+OpenACC execution model
+^^^^^^^^^^^^^^^^^^^^^^^
+
+-  OpenACC includes two different approaches for defining parallel
+   regions
+
+   -  ``parallel`` defines a region to be executed on an accelerator.
+      Work sharing *parallelism* has to be defined *manually*. Good
+      tuning prospects.
+   -  ``kernels`` defines a region to be transferred into a series of
+      kernels to be executed in *sequence* on an accelerator. Work
+      sharing parallelism is defined *automatically* for the separate
+      kernels, but tuning prospects limited.
+
+-  With similar work sharing, both can perform equally well
 
