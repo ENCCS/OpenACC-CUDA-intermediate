@@ -4,8 +4,10 @@ OpenACC: Optimization
 =====================
 
 - Data movement is an important part to optimize when using GPUs
+
     - Keeping data on the GPU as long as possible
 - Getting the compiler to generate parallel code
+
     - Addressing loop performance optimization
 - Data access and execution divergence are important for GPU performance
 
@@ -35,23 +37,22 @@ Optimizing data movement
 .. code :: c
 
  $ export PGI_ACC_TIME=1
- $ ./himeno.x
+ $ cp himeno_C_v01.c himeno_C.c && make
+ $ sbatch run_himeno.sh
   jacobi  NVIDIA  devicenum=0
-    time(us): 24,912,728
+    time(us): 26,955,638
     215: compute region reached 4 times
         215: kernel launched 4 times
             grid: [510]  block: [128]
-             device time(us): total=6,735 max=1,693 min=1,678 avg=1,683
-            elapsed time(us): total=6,998 max=1,763 min=1,741 avg=1,749
+            elapsed time(us): total=15,708 max=4,019 min=3,894 avg=3,927
         215: reduction kernel launched 4 times
             grid: [1]  block: [256]
-             device time(us): total=17 max=5 min=4 avg=4
-            elapsed time(us): total=104 max=28 min=25 avg=26
+            elapsed time(us): total=85 max=29 min=18 avg=21
     215: data region reached 8 times
         215: data copyin transfers: 3115092
-             device time(us): total=18,715,892 max=787 min=4 avg=6
+             device time(us): total=20,563,324 max=28,863 min=5 avg=6
         237: data copyout transfers: 518164
-             device time(us): total=6,190,084 max=230 min=11 avg=11
+             device time(us): total=6,392,314 max=27,802 min=11 avg=12
  
 .. code :: c
 
@@ -70,33 +71,31 @@ Optimizing data movement
 .. code :: c
 
  $ export PGI_ACC_TIME=1
- $ ./himeno.x
+ $ cp himeno_C_v02.c himeno_C.c && make
+ $ sbatch run_himeno.sh
   jacobi  NVIDIA  devicenum=0
-    time(us): 389,951
+    time(us): 384,219
     212: data region reached 4 times
         212: data copyin transfers: 220
-             device time(us): total=148,455 max=4,814 min=60 avg=674
+             device time(us): total=308,182 max=1,483 min=121 avg=1,400
         247: data copyout transfers: 18
-             device time(us): total=30,017 max=2,130 min=163 avg=1,667
-    217: compute region reached 101 times
-        217: kernel launched 101 times
+             device time(us): total=74,577 max=4,861 min=327 avg=4,143
+    217: compute region reached 83 times
+        217: kernel launched 83 times
             grid: [510]  block: [128]
-             device time(us): total=168,823 max=1,734 min=1,656 avg=1,671
-            elapsed time(us): total=171,048 max=1,761 min=1,676 avg=1,693
-        217: reduction kernel launched 101 times
+            elapsed time(us): total=345,316 max=28,382 min=3,813 avg=4,160
+        217: reduction kernel launched 83 times
             grid: [1]  block: [256]
-             device time(us): total=560 max=7 min=5 avg=5
-            elapsed time(us): total=2,861 max=209 min=24 avg=28
-    217: data region reached 202 times
-        217: data copyin transfers: 101
-             device time(us): total=589 max=14 min=5 avg=5
-        239: data copyout transfers: 101
-             device time(us): total=1,520 max=24 min=13 avg=15
-    242: compute region reached 101 times
-        242: kernel launched 101 times
+            elapsed time(us): total=1,473 max=38 min=16 avg=17
+    217: data region reached 166 times
+        217: data copyin transfers: 83
+             device time(us): total=431 max=13 min=5 avg=5
+        239: data copyout transfers: 83
+             device time(us): total=1,029 max=24 min=11 avg=12
+    242: compute region reached 83 times
+        242: kernel launched 83 times
             grid: [510]  block: [128]
-             device time(us): total=39,987 max=435 min=389 avg=395
-            elapsed time(us): total=42,470 max=467 min=412 avg=420
+            elapsed time(us): total=71,775 max=885 min=852 avg=864
 
 Optimize Loop performance
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -129,19 +128,26 @@ Collapse Clause
 .. code :: c
 
  $ export PGI_ACC_TIME=1
- $ ./himeno.x
+ $ cp himeno_C_v03.c himeno_C.c && make
+ $ sbatch run_himeno.sh
   jacobi  NVIDIA  devicenum=0
-    time(us): 4,062,105
+    time(us): 22,300
     221: data region reached 4 times
-    226: compute region reached 2214 times
-        226: kernel launched 2214 times
+    226: compute region reached 1322 times
+        226: kernel launched 1322 times
             grid: [65535]  block: [128]
-             device time(us): total=3,252,373 max=1,560 min=1,465 avg=1,469
-            elapsed time(us): total=3,296,349 max=1,664 min=1,484 avg=1,488
-        226: reduction kernel launched 2214 times
+            elapsed time(us): total=4,012,812 max=30,035 min=2,960 avg=3,035
+        226: reduction kernel launched 1322 times
             grid: [1]  block: [256]
-             device time(us): total=260,194 max=261 min=114 avg=117
-            elapsed time(us): total=304,827 max=344 min=133 avg=137
+            elapsed time(us): total=128,708 max=138 min=95 avg=97
+    226: data region reached 2644 times
+        226: data copyin transfers: 1322
+             device time(us): total=6,627 max=10 min=5 avg=5
+        248: data copyout transfers: 1322
+             device time(us): total=15,673 max=94 min=10 avg=11
+    251: compute region reached 1322 times
+        251: kernel launched 1322 times
+            grid: [65535]  block: [128]
  
 Loop directives
 ---------------
@@ -210,19 +216,23 @@ Device data interoperability
 
 - OpenACC includes methods to access to device data pointers
 - Device data pointers can be used to interoperate with libraries and other programming techniques available for accelerator devices
-  - CUDA kernels and libraries
-  - CUDA-aware MPI libraries
+
+   -  CUDA kernels and libraries
+   -  CUDA-aware MPI libraries
 
 Calling CUDA-kernel from OpenACC-program
 ----------------------------------------
 
 - Define a device address to be available on the host
-  - C/C++: **#pragma acc host_data [clause]**
-  - Fortran: **!$acc host_data [clause]**
-- Only a single clause is allowed: C/C++, Fortran: use_device(var-list)
+
+  -  C/C++: ``#pragma acc host_data [clause]``
+  -  Fortran: ``!$acc host_data [clause]``
+
+- Only a single clause is allowed: C/C++, Fortran: ``use_device(var-list)``
 - Within the construct, all the variables in var-list are referred to by using their device addresses
 
-.. code:: c
+.. code :: c
+
  #pragma acc data present(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4],r[0:n1*n2*n3])
     {
  #pragma acc host_data use_device(u,v,r,a)
@@ -233,7 +243,8 @@ Calling CUDA-kernel from OpenACC-program
 
 (refer to *examples/OpenACC/MG/solution/C/MG/mg_v08.c*)
 
-.. code:: c
+.. code :: c
+
   extern "C" void resid_cuda(double *u, double *v, double *r,
                              int *n1, int *n2, int *n3,
                              double *a)

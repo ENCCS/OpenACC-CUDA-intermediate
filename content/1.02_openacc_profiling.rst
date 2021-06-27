@@ -103,13 +103,14 @@ Analysis and Parallelization
 
 .. code:: bash
 
- $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./himeno.x
+ $ srun -n 1 nvprof --cpu-profiling on --cpu-profiling-mode top-down ./himeno.x
  ======== CPU profiling result (top down):
  Time(%)      Time  Name
- 92.67%    18.96s  jacobi
-  5.77%     1.18s  __c_mcopy4_avx
-  1.56%     320ms  initmt
-  0.10%      20ms    __memset_avx2_unaligned_erms
+ 85.74%    18.16s  jacobi
+  7.46%     1.58s  initmt
+  0.94%     200ms  | ???
+  6.75%     1.43s  __c_mcopy4_sky
+  0.05%      10ms  __c_mcopy4
 
 OpenACC data model
 ^^^^^^^^^^^^^^^^^^
