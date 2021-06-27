@@ -1,17 +1,17 @@
-Asynchronos execution
-=====================
+Asynchronous execution
+======================
 
 1. Task parallelizm
 -------------------
 
-So far when using GPUs we have explored the data-based parallelism.
-In many applications there is another type of parallelism, called task based parallelism.
+So far when using GPUs we have explored the data parallelism.
+In many applications there is another type of parallelism, called task parallelism.
 A good example is molecular dynamics, where particle exert forces of different nature.
 These include short-range and long-range electrostatic interactions, bonded forces.
 Since these forces can be computed independently, their evaluation can run in parallel.
 It worth noting that data parallelism can be seen as the task parallelism.
 Indeed, if we do operation on a vector, this vector can be split in two parts and each part can be considered as a separate task.
-For example, this can be explored in the reduction example --- diferent part of the reduction array can be reduced independently.
+For example, this can be explored in the reduction example --- different part of the reduction array can be reduced independently.
 All that we will have to do after is to sum the results up.
 Note that there is another avenue that can be explored in a GPU version as we will see later.
 
@@ -65,7 +65,7 @@ Let us start with exploring the data parallelism first.
 
     Convert the CPU code to GPU code.
     To compile the CPU code, type ``gcc async_cpu.cpp -lm -o async_cpu``.
-    Note that we are using math library, hence we need to tell the compiler to link agains it.
+    Note that we are using math library, hence we need to tell the compiler to link against it.
 
     1. Change the extension of the file to ``.cu`` so that ``nvcc`` understands that there will be CUDA code in the file.
 
@@ -108,8 +108,7 @@ As a result, the execution timeline looks similar to this:
 2. Exploring task parallelism
 -----------------------------
 
-Things get even more interesting on the GPU.
-A GPU-accelerated part of a typical program startt with the data transfer from host to the device.
+A GPU-accelerated part of a typical program stars with the data transfer from host to the device.
 Then the computational kernel is called and the data is copied back.
 Consider now having two GPU tasks that need their own data.
 Both of these task will copy the input host to the device, execute the computational kernel and copy data back.
@@ -123,9 +122,10 @@ So we want the execution to follow the scheme below.
     All the data transfers and two functions are executed sequentially.
 
 Note that there are still dependencies between tasks: we can not run the ``func1(..)`` before the ``data1`` is on the GPU and we can not copy the ``result1`` to the CPU before the kernel is finished.
-In order to express such sequential dependencies implicetely in CUDA, there is a mechanism called streams.
-Essentially, you assign the asynchroneos API calls to a stream, where they ensured to execute one after another.
-We will need to create two streams for our program, which is done by calling the following function:
+In order to express such sequential dependencies implicitly in CUDA, there is a mechanism called streams.
+Essentially, you assign the asynchronous API calls to a stream, where they ensured to execute one after another.
+Different streams, on the other hand, can run simultaneously.
+Creating a stream is done by calling the following function:
 
 .. signature:: |cudaStreamCreate|
     
@@ -152,7 +152,7 @@ We do not need it in this example, but this is alright, since we can always requ
 Calling GPU kernel in a stream results in its asynchronous launch.
 Now we need to make the data transfer asynchronous to.
 Before we do that, we need to do some preparations with our data.
-Any asynchronos call returns the execution back to the CPU, so we need to ensure that the host data is not tempered with while it is copied to the GPU.
+Any asynchronous call returns the execution back to the CPU, so we need to ensure that the host data is not tempered with while it is copied to the GPU.
 This is also called pinning, and should be done by using CUDA API while allocating host memory:
 
 .. signature:: |cudaMallocHost|
@@ -180,12 +180,12 @@ Now the host arrays are pinned, we can do the host to device and device to host 
         
         __host__ ​__device__​ cudaError_t cudaMemcpyAsync(void* dst, const void* src, size_t count, cudaMemcpyKind kind, cudaStream_t stream = 0)
 
-The signature of this function is very similar to the synchronos variant we used before.
+The signature of this function is very similar to the synchronous variant we used before.
 The only difference is that it now takes one extra argument --- the stream in which the copy should be executed.
 
 One last function that we are going to need is the blocking synchronization function.
-The calls to asynchroneos functions return control back to the CPU right after the call, before the actual execution is completed.
-Hence, before the data is anlized back on the CPU, we need to insure that all the calls we issued are completed.
+The calls to asynchronous functions return control back to the CPU right after the call, before the actual execution is completed.
+Hence, before the data is analyzed back on the CPU, we need to insure that all the calls we issued are completed.
 This can be done with the following function from CUDA API:
 
 .. signature:: |cudaDeviceSynchronize|
@@ -210,11 +210,21 @@ Now we have all the means to execute the data transfers and kernel calls asynchr
             .. literalinclude:: ../examples/CUDA/Async1/solution/async_gpu_2.cu
                 :language: CUDA
 
-    1. Change the thread indexing where to make sure that first threads are doing the reduction.
-       This is easier to do if one compute the index of the reduced value from the thread index.
+    1. The CPU data needs to be pinned.
+       Change the allocation and release of the memory so that CUDA API calls to |cudaMallocHost| and |cudaFreeHost| are used.
 
-On a GPU, the host to device copy, kkernel evaluation and device to host copy require different resources.
-Hence, while the data is copied, GPU can execute the computational kernel without interfereng with the compute.
+    2. Create two streams --- one for ``func1(..)`` and one for ``func2()``.
+
+    3. Change host to device and device to host data transfers from |cudaMemcpy| to |cudaMemcpyAsync|.
+       Use ``stream1`` for ``data1`` and ``stream2`` for ``data2``.
+       
+    4. Make the kernel launch asynchronous by adding streams as forth parameter to the kernel launch configurations.
+       You will also need to specify the shared memory size as the third parameter --- set it to zero.
+
+    5. Add |cudaDeviceSynchronize| call when all asynchronous API calls are made to make sure that everything is finished before the results are printed.
+
+On a GPU, the host to device copy, kernel evaluation and device to host copy require different resources.
+Hence, while the data is copied, GPU can execute the computational kernel without interfering with the compute.
 
 .. figure:: img/TaskParallelism/ENCCS-OpenACC-CUDA_TaskParallelism2_TimelineGPUAsync.png
     :align: center

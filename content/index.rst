@@ -18,6 +18,7 @@ Intermediate OpenACC/CUDA
    :maxdepth: 1
    :caption: Table of contents
 
+   0.01_gpu-introduction.rst
    1.02_openacc_profiling.rst
    1.03_openacc_optimization.rst
    3.01_ParallelReduction1
