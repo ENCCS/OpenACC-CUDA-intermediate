@@ -1,5 +1,5 @@
-Optimizing the CUDA kernel
-==========================
+CUDA: Optimizing the GPU kernel
+===============================
 
 1. Reduction to a single value
 ------------------------------
@@ -19,11 +19,11 @@ Thus, on each iteration, one floating point number will be added to accumulating
     Each iteration (unfolded on the Figure) takes one element of the vector and adds it to the accumulated value.
 
 On a GPU, many threads are running simultaneously.
-This means that simple approach of adding values to a single number will not work out of the box - we simply don't know which of the threads will be adding respective value at a given time.
+This means that simple approach of adding values to a single number will not work out of the box --- we simply don't know which of the threads will be adding respective value at a given time.
 In case two threads are trying to add to the value simultaneously, we can encounter a problem called race condition.
 In particular, if thread number one tries to make a binary addition, it should first read the accumulated value.
 If, at the same time, thread number two does the same thing, it will first read the value as well.
-In case this happens before thread one saves the data, the result from thread one will overwrite the value and the addition from the thread one will be lost.
+In case this happens before the first thread saves the data, the result from the first thread will overwrite the value and the addition from the thread one will be lost.
 To avoid race conditions, the summation has to be done in a thread-safe fashion.
 Likely, CUDA provides atomic functions, that ensures that all the operations are done thread-safe.
 Atomic functions have the following signature:
@@ -34,11 +34,11 @@ Atomic functions have the following signature:
 
         __device__ float atomicAdd(float* address, float val)
 
-Obviously, these can only be called from the device, where they are needed.
+These can only be called from the device, where the application runs in many threads.
 The function takes the address, where the data will be atomically added and a value to add.
 Note, that the atomic operations can be called on a system level, device level and thread block level and these will result in different performance.
 Let us first adopt a simple CPU code that accumulates values to a single variable to run on a GPU.
-Note that this approach is not desirable both from correctness and performance standpoints, as we will see below.
+Note that this approach is not desirable both from correctness and performance standpoints, as we will see later.
 The figure below illustrates how the CPU algorithm can be adopted to run on a GPU with atomic operations.
 Since the number of threads on a GPU is a multiple by a block size, some threads may try to access the elements that are out of bonds.
 So either extra condition should be added ot the array should be extended by zeroes, as shown on the figure.
@@ -66,6 +66,8 @@ So either extra condition should be added ot the array should be extended by zer
             .. literalinclude:: ../examples/CUDA/Reduction/solution/reduction_gpu_1.cu
                 :language: CUDA
 
+    Converty the C++ code to CUDA using atomic operations.
+    
     1. To compile the CPU code, type:
 
     .. code-block::
@@ -105,21 +107,24 @@ Indeed, we are summing random values between 0 and 1.
 If the number of these values is large enough, the sum should be approximately half of the number of the elements.
 But running the code for :math:`10^8` elements results in a number is significantly lower.
 
-Question:
-Why the number is significantly lower than expected for large vectors? How can one fix this?
+.. challenge:: Why the number is significantly lower than expected for large vectors? How can one fix this?
 
-Answer:
-Even though the numbers we are summing up have similar value (from 0 to 1), we are accumulating them to a single precision floating point number.
-The sum in this number becomes large and at some point we are adding small number to a big number.
-The floating point numbers are stored as a set of significant digits and an exponent.
-When adding them up, the exponent has to be equalized.
-The significant numbers in the small number are then shifted to match the big number and when the significant numbers run out, it becomes zero.
-For instance, :math:`0.5=0.500*10^1=0.050*10^2=0.005*10^3=0.000*10^4`.
-The number of significant digits for single precision floating point is about 8 in usual decimal arithmetic.
-So, when we are adding about :math:`10^8` numbers of approximately the same value, their values will be lost.
-The easiest way to solve this problem is to use double precision for accumulated value.
-Double precision has about 15 significant digits in decimal arithmetic.
-However, more robust approach would be to do the summation by pairs, as illustrated on the figure below.
+    Try running the progrem for 100000000 elements. What is the expected reduction value? Compare it with what you are getting.
+
+.. solution::
+
+    Even though the numbers we are summing up have similar value (from 0 to 1), we are accumulating them to a single precision floating point number.
+    The sum in this number becomes large and at some point we are adding small number to a big number.
+    The floating point numbers are stored as a set of significant digits and an exponent.
+    When adding them up, the exponent has to be equalized.
+    The significant numbers in the small number are then shifted to match the exponent of the big number.
+    When the significant numbers run out, it becomes zero.
+    For instance, :math:`0.5=0.500*10^1=0.050*10^2=0.005*10^3=0.000*10^4`.
+    The number of significant digits for single precision floating point is about 8 in decimal arithmetic.
+    So, when we are adding about :math:`10^8` numbers of approximately the same value, their values will be lost.
+    The easiest way to solve this problem is to use double precision for accumulated value.
+    Double precision has about 15 significant digits in decimal arithmetic.
+    However, more robust approach would be to do the summation by pairs, as illustrated on the figure below.
 
 
 There is another problem with the GPU code as well.
@@ -177,7 +182,6 @@ Let us fix the CPU code with the approach described by the figure above.
        Make sure it produces the right result with large number of elements in the array (i.e. with :math:`N>10^8`).
 
 Having this CPU version gives us a reference that can be handy while adapting the GPU code.
-Instead of reducing numbers to a single value, we should introduce the GPU array to which to collect the reduced values.
 
 .. figure:: img/Reduction/ENCCS-OpenACC-CUDA_Reduction_gpu_2.png
     :align: center
@@ -190,7 +194,7 @@ Instead of reducing numbers to a single value, we should introduce the GPU array
     The numbers in circles indicate which thread does the specific operation.
     The values that are out of bonds are set to zeroes to make sure that all threads get the data.
 
-
+Let us use the same approach to fix the GPU code.
 
 .. typealong:: Fix the accuracy for large number of elements
 
@@ -348,19 +352,19 @@ Note that we will need to synchronize threads in multiple places to make sure th
     1. First, let us introduce the shared memory array to the code.
        We simply add to the kernel:
 
-       :: code-block: CUDA
+       .. code-block:: CUDA
 
            extern __shared__ float s_data[];
     
        And a third argument to the kernel launch:
 
-       :: code-block: CUDA
+       .. code-block:: CUDA
 
            reduce_kernel<<<numBlocks, threadsPerBlock, threadsPerBlock*sizeof(float)>>>(..)
 
     2. In the kernel, we first read one element of the input data per thread and save it to the shared memory array:
 
-       :: code-block: CUDA
+       .. code-block:: CUDA
 
             int s_i = threadIdx.x;
             int d_i = threadIdx.x + blockIdx.x*blockDim.x;
@@ -386,6 +390,11 @@ Note that we will need to synchronize threads in multiple places to make sure th
 
 4. Reduce thread divergency
 ---------------------------
+
+In the previous call, we ask the thread that correspond to the value that is reduced to do the work.
+This is not effective on a GPU: neighboring threads will diverge from one onother.
+Next optimization step will be fixing that.
+Let us try to modify the code so that the first threads in the block do the reduction.
 
 .. figure:: img/Reduction/ENCCS-OpenACC-CUDA_Reduction_gpu_4.png
     :align: center
@@ -485,7 +494,7 @@ In this case all threads will have some computations to do and less resources wi
 
     1. Change the part of the code where the values are saved to the shared memory so that two values are read simultaneously and the first pairwise reduction is done.
 
-    2. Only half as many thread blocks are now needed, so the kernel launch configuration should be changed accordingly.
+    2. Only half as many thread blocks are now needed, so the kernel launch configuration and loop over the kernel launches should be changed accordingly.
 
 7. Unroll the last warp
 -----------------------
@@ -494,7 +503,8 @@ The GPUs are often refereed to having Single Instruction Multiple Threads (SIMT)
 This is to separate them from Single Instruction Multiple Data (SIMD) devices.
 The main difference is that different threads can execute different instructions.
 However, this is only true, when the threads in question are outside the same warp.
-Warp is a SIMD unit of threads, where any thread divergence will take both paths in every thread even one only one of them will take an alternative path.
+Warp is a unit of threads that executes the same instructions for all the threads.
+In a warp any thread divergence will take both paths in every thread even when only one of them will take an alternative path.
 On NVidia GPUs, the warp is a unit of 32 threads, which means that when we get to that many threads, special care should be taken to make sure that there is no divergence.
 In fact, even checking for the conditional will slow the execution down.
 The good thing is that, inside the warp, all the threads do the same operation at the same time, which can be used to remove explicit synchronization calls.

@@ -1,5 +1,5 @@
-Asynchronous execution
-======================
+CUDA: Asynchronous execution
+============================
 
 1. Task parallelizm
 -------------------

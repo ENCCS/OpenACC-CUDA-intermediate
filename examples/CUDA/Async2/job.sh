@@ -7,4 +7,4 @@
 #SBATCH -n 1
 ###SBATCH --mem=10
 
-./reduction_cpu_1 10000000
+./async_cpu 1000000
