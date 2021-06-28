@@ -82,7 +82,9 @@ The image below demonstrates the key steps:
 Compiling code
 ^^^^^^^^^^^^^^
 
-WRITEME
+Some examples (in subfolders under ``examples/OpenACC`` or ``examples/CUDA``)
+have a ``Makefile`` and code is compiled by typing ``make``. In other examples
+there will be compilation instructions in the lesson material.
 
 	   
 Running jobs
