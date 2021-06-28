@@ -144,5 +144,8 @@ OpenACC execution model
       Work sharing *parallelism* has to be defined *manually*. Good
       tuning prospects. 
 
+   -  C/C++: ``#pragma kernels``, ``#pragma parallel loop`` 
+   -  Fortran: ``!acc kernels``, ``!$acc parallel loop``
+
 -  With similar work sharing, both can perform equally well
 
