@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Setup &mdash; Intermediate OpenACC/CUDA  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_lesson.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_rtd_theme_ext_color_contrast.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/togglebutton.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/minipres.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex/" />
+    <link rel="search" title="Search" href="../search/" />
+    <link rel="next" title="Quick Reference" href="../quick-reference/" />
+    <link rel="prev" title="CUDA: Asynchronous execution" href="../3.02_TaskParallelism/" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../" class="icon icon-home"> Intermediate OpenACC/CUDA
+          
+
+          
+            
+            <img src="../_static/ENCCS.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search/" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../0.01_gpu-introduction/">Introduction to GPU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1.02_openacc_profiling/">OpenACC: Analysis and Parallelization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1.03_openacc_optimization/">OpenACC: Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3.01_ParallelReduction1/">CUDA: Optimizing the GPU kernel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3.02_TaskParallelism/">CUDA: Asynchronous execution</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#running-on-cloud-enccs-se">Running on cloud.enccs.se</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-log-in">How to log in</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#navigating-the-interface">Navigating the interface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#compiling-code">Compiling code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-jobs">Running jobs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#running-on-google-colab">Running on Google Colab</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-reference/">Quick Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/">Instructor’s guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../">Intermediate OpenACC/CUDA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Setup</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/ENCCS/OpenACC-CUDA-intermediate/blob/main/content/setup.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="setup">
+<span id="id1"></span><h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
+<p>In order to follow type-along sessions and do exercises in this lesson
+you will need access to a computational resource with GPUs and
+installations of CUDA and compilers supporting OpenACC.</p>
+<div class="admonition-where-to-run-the-exercises callout admonition">
+<p class="admonition-title">Where to run the exercises</p>
+<p>During an ENCCS workshop the primary way to do the exercises is to use
+the virtual cloud-based cluster available to workshop participants.
+You can find instruction for <a class="reference external" href="http://cloud.enccs.se">http://cloud.enccs.se</a> below.</p>
+<p>If you do not have access to the ENCCS virtual cluster but you have
+a user account on another GPU cluster you can use that instead -
+note however that you will need to adapt the instructions below
+according to the specifics of that cluster.</p>
+<p>If you do not have access to any GPU cluster, you can follow the
+instructions below on how to use Google Colab.</p>
+</div>
+<div class="admonition-download-example-codes callout admonition">
+<p class="admonition-title">Download example codes</p>
+<p>The C and Fortran codes used for exercises in this lesson are contained
+in the same Git repository as the lesson material, so it is best to clone
+the repository by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># On cloud.enccs.se or another machine without ssh keys:</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ENCCS</span><span class="o">/</span><span class="n">OpenACC</span><span class="o">-</span><span class="n">CUDA</span><span class="o">-</span><span class="n">intermediate</span><span class="o">.</span><span class="n">git</span>
+<span class="c1"># On another system if you have set up ssh keys on GitHub:</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">ENCCS</span><span class="o">/</span><span class="n">OpenACC</span><span class="o">-</span><span class="n">CUDA</span><span class="o">-</span><span class="n">intermediate</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>After that, navigate to the examples directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">OpenACC</span><span class="o">-</span><span class="n">CUDA</span><span class="o">-</span><span class="n">intermediate</span><span class="o">/</span><span class="n">examples</span>
+</pre></div>
+</div>
+<p>OpenACC examples are contained in the <code class="docutils literal notranslate"><span class="pre">OpenACC</span></code> directory and CUDA examples
+are in the <code class="docutils literal notranslate"><span class="pre">CUDA</span></code> directory.</p>
+</div>
+<div class="section" id="running-on-cloud-enccs-se">
+<h2>Running on cloud.enccs.se<a class="headerlink" href="#running-on-cloud-enccs-se" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="how-to-log-in">
+<h3>How to log in<a class="headerlink" href="#how-to-log-in" title="Permalink to this headline">¶</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The following steps only work if you are attending an ENCCS
+workshop and you have sent your GitHub username to the workshop
+organisers.</p>
+</div>
+<p>Visit <a class="reference external" href="http://cloud.enccs.se">http://cloud.enccs.se</a> in your web browser. Your browser might complain
+about the connection being insecure, but click to proceed anyways (there is no
+risk involved!).</p>
+<p>Click the orange “Sign in with GitHub” button and provide your GitHub username
+and password.</p>
+</div>
+<div class="section" id="navigating-the-interface">
+<h3>Navigating the interface<a class="headerlink" href="#navigating-the-interface" title="Permalink to this headline">¶</a></h3>
+<p>After login you will find yourself in a JupyterLab session running in the cloud.
+The image below demonstrates the key steps:</p>
+<div class="figure align-center">
+<img alt="../_images/JupyterLab.png" src="../_images/JupyterLab.png" />
+</div>
+<ol class="arabic simple">
+<li><p>Start by opening a terminal.</p></li>
+<li><p>In terminal, clone the lesson repository:
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/ENCCS/OpenACC-CUDA-intermediate.git</span></code></p></li>
+<li><p>In the left-hand side-bar, navigate to the <code class="docutils literal notranslate"><span class="pre">examples</span></code> directory where you
+can find code examples under the <code class="docutils literal notranslate"><span class="pre">OpenACC</span></code> and <code class="docutils literal notranslate"><span class="pre">CUDA</span></code> subdirectories.
+Double-clicking a file opens it up in the JupyterLab text editor.</p></li>
+<li><p>Optional: You can configure the text editor under the “Settings” menu.</p></li>
+<li><p>If you want to download a file to your local computer, select “Download” under the
+“File” menu.</p></li>
+</ol>
+</div>
+<div class="section" id="compiling-code">
+<h3>Compiling code<a class="headerlink" href="#compiling-code" title="Permalink to this headline">¶</a></h3>
+<p>Some examples (in subfolders under <code class="docutils literal notranslate"><span class="pre">examples/OpenACC</span></code> or <code class="docutils literal notranslate"><span class="pre">examples/CUDA</span></code>)
+have a <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> and code is compiled by typing <code class="docutils literal notranslate"><span class="pre">make</span></code>. In other examples
+there will be compilation instructions in the lesson material.</p>
+</div>
+<div class="section" id="running-jobs">
+<h3>Running jobs<a class="headerlink" href="#running-jobs" title="Permalink to this headline">¶</a></h3>
+<p>From terminal you have access to the SLURM scheduler, which is used to
+send jobs to the GPU compute nodes.
+An example job script is as follows (update as needed before submitting):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH -t 00:10:00</span>
+<span class="c1">#SBATCH -o output.o</span>
+<span class="c1">#SBATCH -e error.e</span>
+<span class="c1">#SBATCH -N 1</span>
+
+./executable.x &gt; log.<span class="nv">$SLURM_JOBID</span>.txt <span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span>
+</pre></div>
+</div>
+<p>To run a job on a GPU compute node, save the job script (e.g. as <cite>job.sh</cite>)
+and submit it by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sbatch</span> <span class="n">job</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>While your job is running you can monitor it by <code class="docutils literal notranslate"><span class="pre">squeue</span></code> or
+<code class="docutils literal notranslate"><span class="pre">squeue</span> <span class="pre">-u</span> <span class="pre">&lt;your-username&gt;</span></code>.</p>
+</div>
+</div>
+<div class="section" id="running-on-google-colab">
+<h2>Running on Google Colab<a class="headerlink" href="#running-on-google-colab" title="Permalink to this headline">¶</a></h2>
+<p>If you do not have access to cloud.enccs.se to to any HPC clusters with GPUs, a fallback option
+can be to use the <a class="reference external" href="https://colab.research.google.com/">Google Colab service</a>
+where you can get access to GPUs in the cloud through Jupyter notebooks.
+<strong>Note: This requires that you have a Google account.</strong></p>
+<ul class="simple">
+<li><p>First click the “Open in Colab” button on
+<a class="reference external" href="https://github.com/ENCCS/OpenACC-CUDA-intermediate">https://github.com/ENCCS/OpenACC-CUDA-intermediate</a> and enter your Google login information.</p></li>
+<li><p>A Google-flavored Jupyter notebook should open on Colab which contains commands to get up and
+running on Colab. You need to press <code class="docutils literal notranslate"><span class="pre">SHIFT-ENTER</span></code> on the cells to execute them.</p></li>
+<li><p>To get access to a GPU, click on the <em>Runtime</em> menu and select <em>Change runtime type</em>.
+Choose GPU as a Hardware accelerator. It might take a minute for your notebook to
+connect to a GPU.</p></li>
+<li><p>To check whether a GPU has been connected to your session, run the code cell with the <code class="docutils literal notranslate"><span class="pre">!nvidia-smi</span></code>
+command by hitting <code class="docutils literal notranslate"><span class="pre">SHIFT-ENTER</span></code> on it.</p></li>
+<li><p>Click through the next few cells to clone the material, change to the colab branch and enter the
+exercise directories.</p></li>
+</ul>
+<p>All work on Google Colab needs to be done through a Jupyter notebook.
+Here is how you can work on the exercises:</p>
+<ul class="simple">
+<li><p>New code or text (markdown) cells can be created by clicking the “+Code” and “+Text” buttons,
+or through the keyboard shortcut <code class="docutils literal notranslate"><span class="pre">CTRL-m</span> <span class="pre">b</span></code>. Cells can be deleted by <code class="docutils literal notranslate"><span class="pre">CTRL-m</span> <span class="pre">d</span></code>.
+Cells are executed by pressing <code class="docutils literal notranslate"><span class="pre">SHIFT-ENTER</span></code> or pressing the Play button. Pressing instead
+<code class="docutils literal notranslate"><span class="pre">ALT-ENTER</span></code> runs a cell and creates a new one underneath, while <code class="docutils literal notranslate"><span class="pre">CTRL-ENTER</span></code> runs the cell
+and stays on the same cell.</p></li>
+<li><p>General shell commands can be entered into a code cell by prepending it with
+exclamation mark (e.g. <code class="docutils literal notranslate"><span class="pre">!ls</span></code>). Some shell commands have corresponding “magic” commands (e.g. “%ls”),
+and some commands need to use the magic form. In particular, to change directory you need <code class="docutils literal notranslate"><span class="pre">%cd</span> <span class="pre">some/path</span></code>.</p></li>
+<li><p>Explore the directory structure by clicking on the <em>Files</em> symbol in the left-hand
+panel and navigate the <em>OpenACC-CUDA-beginners / examples</em> directory (see red arrow in image below).</p></li>
+<li><p>In the file browser, navigate to the subfolder of the exercise you wish to work on and
+click on the three dots next to the directory and select “Copy path” (see red arrow in image below).</p></li>
+<li><p>In a code cell, paste the path into a <code class="docutils literal notranslate"><span class="pre">%cd</span></code> magic command to change directory.</p></li>
+<li><p>After changing directory, you can for example compile code with Makefiles by <code class="docutils literal notranslate"><span class="pre">!make</span></code>.</p></li>
+<li><p>You can open a text editor by double-clicking a file. This opens an editor on the right of the
+notebook and you can edit it there and save by hitting <code class="docutils literal notranslate"><span class="pre">CTRL-s</span></code> or going through the <em>File</em> menu.
+<strong>Note</strong>: it is for some reason impossible to open files with <code class="docutils literal notranslate"><span class="pre">.cu</span></code> ending in the Colab editor,
+so open instead the symbolic links with <code class="docutils literal notranslate"><span class="pre">.cpp</span></code> ending when working on these files.</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/colab.png"><img alt="../_images/colab.png" src="../_images/colab.png" style="width: 337.0px; height: 476.0px;" /></a>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../quick-reference/" class="btn btn-neutral float-right" title="Quick Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../3.02_TaskParallelism/" class="btn btn-neutral float-left" title="CUDA: Asynchronous execution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, EuroCC National Competence Centre Sweden.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

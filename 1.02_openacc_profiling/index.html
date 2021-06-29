@@ -1,0 +1,900 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>OpenACC: Analysis and Parallelization &mdash; Intermediate OpenACC/CUDA  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_lesson.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_rtd_theme_ext_color_contrast.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/togglebutton.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/minipres.js"></script>
+        <script src="../_static/tabs.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex/" />
+    <link rel="search" title="Search" href="../search/" />
+    <link rel="next" title="OpenACC: Optimization" href="../1.03_openacc_optimization/" />
+    <link rel="prev" title="Introduction to GPU" href="../0.01_gpu-introduction/" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../" class="icon icon-home"> Intermediate OpenACC/CUDA
+          
+
+          
+            
+            <img src="../_static/ENCCS.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search/" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../0.01_gpu-introduction/">Introduction to GPU</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OpenACC: Analysis and Parallelization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-openacc">What is OpenACC ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#openacc-vs-cuda-or-hip">OpenACC vs. CUDA or HIP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#steps-in-porting-code-to-gpus">Steps in porting code to GPUs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-himeno-stencil-benchmark">The Himeno stencil benchmark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-nas-parallel-benchmark-mg">The NAS parallel benchmark MG</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-and-parallelization">Analysis and Parallelization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#openacc-data-model">OpenACC data model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#openacc-execution-model">OpenACC execution model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../1.03_openacc_optimization/">OpenACC: Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3.01_ParallelReduction1/">CUDA: Optimizing the GPU kernel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3.02_TaskParallelism/">CUDA: Asynchronous execution</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-reference/">Quick Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/">Instructor’s guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../">Intermediate OpenACC/CUDA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>OpenACC: Analysis and Parallelization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/ENCCS/OpenACC-CUDA-intermediate/blob/main/content/1.02_openacc_profiling.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="openacc-analysis-and-parallelization">
+<span id="openacc-profiling"></span><h1>OpenACC: Analysis and Parallelization<a class="headerlink" href="#openacc-analysis-and-parallelization" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-openacc">
+<h2>What is OpenACC ?<a class="headerlink" href="#what-is-openacc" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>OpenACC defines a set of compiler directives that allow code regions
+to be offloaded from a host CPU to be computed on a GPU</p>
+<ul>
+<li><p>High level GPU programming</p></li>
+<li><p>Large similarity to OpenMP directives</p></li>
+</ul>
+</li>
+<li><p>Support for both C/C++ and Fortran bindings</p></li>
+<li><p>Extensive guides, tutorials, code samples and documentation on the OpenACC standard
+can be found at <a class="reference external" href="http://www.openacc.org">www.openacc.org</a>.</p></li>
+</ul>
+</div>
+<div class="section" id="openacc-vs-cuda-or-hip">
+<h2>OpenACC vs. CUDA or HIP<a class="headerlink" href="#openacc-vs-cuda-or-hip" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Why OpenACC and not <a class="reference external" href="https://en.wikipedia.org/wiki/CUDA">CUDA</a> / <a class="reference external" href="https://en.wikipedia.org/wiki/GPUOpen#AMD_Boltzmann_Initiative">HIP</a>?</p>
+<ul>
+<li><p>Easier to work with</p></li>
+<li><p>Porting of existing software requires less work</p></li>
+<li><p>Same code can be compiled to CPU and GPU versions easily</p></li>
+</ul>
+</li>
+<li><p>Why CUDA/HIP and not OpenACC?</p>
+<ul>
+<li><p>Get access to all features of the GPU hardware</p></li>
+<li><p>More optimization possibilities</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="steps-in-porting-code-to-gpus">
+<h2>Steps in porting code to GPUs<a class="headerlink" href="#steps-in-porting-code-to-gpus" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>The three key steps in porting to high performance accelerated code:</p>
+<ol class="arabic simple">
+<li><p>Analyze/Identify parallelism</p></li>
+<li><p>Express data movement and parallelism</p></li>
+<li><p>Optimize data movement and loop performance</p></li>
+<li><p>Go back to 1!</p></li>
+</ol>
+</li>
+</ul>
+<img alt="../_images/development-cycle.png" src="../_images/development-cycle.png" />
+<ul class="simple">
+<li><p><em>Analyze</em> your code to determine most likely places needing parallelization or optimization.</p></li>
+<li><p><em>Parallelize</em> your code by starting with the most time consuming parts and check for correctness.</p></li>
+<li><p><em>Optimize</em> your code to improve observed speed-up from parallelization.</p></li>
+</ul>
+<div class="section" id="the-himeno-stencil-benchmark">
+<h3>The Himeno stencil benchmark<a class="headerlink" href="#the-himeno-stencil-benchmark" title="Permalink to this headline">¶</a></h3>
+<p>Solving Poisson’s equation for incompressible fluid by the Jacobi iteration method.</p>
+<img alt="../_images/himeno_stencil.png" src="../_images/himeno_stencil.png" />
+<p>(<a class="reference external" href="https://blogs.fau.de/hager/archives/7850">https://blogs.fau.de/hager/archives/7850</a>)</p>
+</div>
+<div class="section" id="the-nas-parallel-benchmark-mg">
+<h3>The NAS parallel benchmark MG<a class="headerlink" href="#the-nas-parallel-benchmark-mg" title="Permalink to this headline">¶</a></h3>
+<p>Multi-Grid on a sequence of meshes for computational fluid dynamics applications</p>
+<img alt="../_images/multigrid.png" src="../_images/multigrid.png" />
+<p>(<a class="reference external" href="https://developer.nvidia.com/blog/high-performance-geometric-multi-grid-gpu-acceleration/">https://developer.nvidia.com/blog/high-performance-geometric-multi-grid-gpu-acceleration/</a>)</p>
+</div>
+</div>
+<div class="section" id="analysis-and-parallelization">
+<h2>Analysis and Parallelization<a class="headerlink" href="#analysis-and-parallelization" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Serial Computing on CPU</p></li>
+</ul>
+<img alt="../_images/serial_openaccc.png" src="../_images/serial_openaccc.png" />
+<ul class="simple">
+<li><p>Porting to GPU</p></li>
+</ul>
+<img alt="../_images/parallel_openacc.png" src="../_images/parallel_openacc.png" />
+<ul class="simple">
+<li><p>NVIDIA nvprof provides a simple interface to collect on a target without using the GUI. (new NSight system)</p>
+<ul>
+<li><p>GPU profiling capabilities: High-level usage statistics, Timeline collection, Analysis metrics</p></li>
+<li><p>basic CPU sampling</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition-himeno-code typealong toggle-shown dropdown admonition">
+<p class="admonition-title">himeno code</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-0-0" aria-selected="true" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="0">c</button><button aria-controls="panel-0-0-1" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-1" name="0-1" role="tab" tabindex="-1">fortran</button></div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/*********************************************************************</span>
+<span class="cm">      This benchmark test program is measuring a cpu performance </span>
+<span class="cm">      of floating point operation and memory access speed.  </span>
+
+<span class="cm">      Modification needed for testing turget computer!!</span>
+<span class="cm">      Please adjust parameter : nn to take one minute to execute</span>
+<span class="cm">      all calculation.  Original parameter set is for PC with </span>
+<span class="cm">      200 MHz MMX PENTIUM, whose score using this benchmark test</span>
+<span class="cm">      is about 32.3 MFLOPS.</span>
+
+<span class="cm">      If you have any question, please ask me via email.</span>
+<span class="cm">      written by Ryutaro HIMENO, October 3, 1998.</span>
+<span class="cm">      Version 2.0  </span>
+<span class="cm">      ----------------------------------------------</span>
+<span class="cm">         Ryutaro Himeno, Dr. of Eng.</span>
+<span class="cm">         Head of Computer Information Center, </span>
+<span class="cm">         The Institute of Pysical and Chemical Research (RIKEN)</span>
+<span class="cm">         Email : himeno@postman.riken.go.jp</span>
+<span class="cm">      ---------------------------------------------------------------</span>
+<span class="cm">      You can adjust the size of this benchmark code to fit your target</span>
+<span class="cm">      computer.  In that case, please chose following sets of </span>
+<span class="cm">      (mimax,mjmax,mkmax):</span>
+<span class="cm">       small : 129,65,65</span>
+<span class="cm">       midium: 257,129,129</span>
+<span class="cm">       large : 513,257,257</span>
+<span class="cm">       ext.large: 1025,513,513</span>
+<span class="cm">      This program is to measure a computer performance in MFLOPS</span>
+<span class="cm">      by using a kernel which appears in a linear solver of pressure </span>
+<span class="cm">      Poisson included in an incompressible Navier-Stokes solver. </span>
+<span class="cm">      A point-Jacobi method is employed in this solver.</span>
+<span class="cm">      ------------------</span>
+<span class="cm">      Finite-difference method, curvilinear coodinate system</span>
+<span class="cm">      Vectorizable and parallelizable on each grid point</span>
+<span class="cm">      No. of grid points : imax x jmax x kmax including boundaries</span>
+<span class="cm">      ------------------</span>
+<span class="cm">      A,B,C:coefficient matrix, wrk1: source term of Poisson equation</span>
+<span class="cm">      wrk2 : working area, OMEGA : relaxation parameter</span>
+<span class="cm">      BND:control variable for boundaries and objects ( = 0 or 1)</span>
+<span class="cm">      P: pressure </span>
+<span class="cm">       -----------------</span>
+<span class="cm">      -------------------     </span>
+<span class="cm">      &quot;use portlib&quot; statement on the next line is for Visual fortran </span>
+<span class="cm">      to use UNIX libraries.  Please remove it if your system is UNIX.</span>
+<span class="cm">      -------------------</span>
+<span class="cm">     use portlib</span>
+
+<span class="cm">     Version 0.2 </span>
+<span class="cm">*********************************************************************/</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&quot;himeno_C.h&quot;</span><span class="cp"></span>
+
+<span class="cp">#ifdef SMALL</span>
+<span class="cp">#define MIMAX            129</span>
+<span class="cp">#define MJMAX            65</span>
+<span class="cp">#define MKMAX            65</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef MIDDLE</span>
+<span class="cp">#define MIMAX            257</span>
+<span class="cp">#define MJMAX            129</span>
+<span class="cp">#define MKMAX            129</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef LARGE</span>
+<span class="cp">#define MIMAX            513</span>
+<span class="cp">#define MJMAX            257</span>
+<span class="cp">#define MKMAX            257</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef DOUBLE_PRECISION</span>
+<span class="k">typedef</span> <span class="kt">double</span> <span class="n">real</span><span class="p">;</span>
+<span class="cp">#else</span>
+<span class="k">typedef</span> <span class="kt">float</span> <span class="n">real</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="k">static</span> <span class="n">real</span>  <span class="n">p</span><span class="p">[</span><span class="n">MIMAX</span><span class="p">][</span><span class="n">MJMAX</span><span class="p">][</span><span class="n">MKMAX</span><span class="p">];</span>
+<span class="k">static</span> <span class="n">real</span>  <span class="n">a</span><span class="p">[</span><span class="n">MIMAX</span><span class="p">][</span><span class="n">MJMAX</span><span class="p">][</span><span class="n">MKMAX</span><span class="p">][</span><span class="mi">4</span><span class="p">],</span>
+              <span class="n">b</span><span class="p">[</span><span class="n">MIMAX</span><span class="p">][</span><span class="n">MJMAX</span><span class="p">][</span><span class="n">MKMAX</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span>
+              <span class="n">c</span><span class="p">[</span><span class="n">MIMAX</span><span class="p">][</span><span class="n">MJMAX</span><span class="p">][</span><span class="n">MKMAX</span><span class="p">][</span><span class="mi">3</span><span class="p">];</span>
+<span class="k">static</span> <span class="n">real</span>  <span class="n">bnd</span><span class="p">[</span><span class="n">MIMAX</span><span class="p">][</span><span class="n">MJMAX</span><span class="p">][</span><span class="n">MKMAX</span><span class="p">];</span>
+<span class="k">static</span> <span class="n">real</span>  <span class="n">wrk1</span><span class="p">[</span><span class="n">MIMAX</span><span class="p">][</span><span class="n">MJMAX</span><span class="p">][</span><span class="n">MKMAX</span><span class="p">],</span>
+              <span class="n">wrk2</span><span class="p">[</span><span class="n">MIMAX</span><span class="p">][</span><span class="n">MJMAX</span><span class="p">][</span><span class="n">MKMAX</span><span class="p">];</span>
+
+<span class="cp">#define NN               3</span>
+
+<span class="kt">double</span> <span class="nf">second</span><span class="p">();</span>
+<span class="n">real</span> <span class="nf">jacobi</span><span class="p">(</span><span class="kt">int</span><span class="p">);</span>
+<span class="kt">void</span> <span class="nf">initmt</span><span class="p">();</span>
+
+<span class="k">static</span> <span class="kt">int</span> <span class="n">imax</span><span class="p">,</span> <span class="n">jmax</span><span class="p">,</span> <span class="n">kmax</span><span class="p">;</span>
+<span class="k">static</span> <span class="n">real</span> <span class="n">omega</span><span class="p">;</span>
+
+<span class="kt">int</span>
+<span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">;</span>
+  <span class="n">real</span> <span class="n">gosa</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">cpu0</span><span class="p">,</span> <span class="n">cpu1</span><span class="p">,</span> <span class="n">nflop</span><span class="p">,</span> <span class="n">xmflops2</span><span class="p">,</span> <span class="n">score</span><span class="p">;</span>
+
+  <span class="n">omega</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">;</span>
+  <span class="n">imax</span> <span class="o">=</span> <span class="n">MIMAX</span><span class="mi">-1</span><span class="p">;</span>
+  <span class="n">jmax</span> <span class="o">=</span> <span class="n">MJMAX</span><span class="mi">-1</span><span class="p">;</span>
+  <span class="n">kmax</span> <span class="o">=</span> <span class="n">MKMAX</span><span class="mi">-1</span><span class="p">;</span>
+
+  <span class="cm">/*</span>
+<span class="cm">   *    Initializing matrixes</span>
+<span class="cm">   */</span>
+  <span class="n">initmt</span><span class="p">();</span>
+
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;mimax = %d mjmax = %d mkmax = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">MIMAX</span><span class="p">,</span> <span class="n">MJMAX</span><span class="p">,</span> <span class="n">MKMAX</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;imax = %d jmax = %d kmax =%d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">imax</span><span class="p">,</span><span class="n">jmax</span><span class="p">,</span><span class="n">kmax</span><span class="p">);</span>
+
+  <span class="cm">/*</span>
+<span class="cm">   *    Start measuring</span>
+<span class="cm">   */</span>
+  <span class="n">cpu0</span> <span class="o">=</span> <span class="n">second</span><span class="p">();</span>
+
+  <span class="cm">/*</span>
+<span class="cm">   *    Jacobi iteration</span>
+<span class="cm">   */</span>
+
+  <span class="n">gosa</span> <span class="o">=</span> <span class="n">jacobi</span><span class="p">(</span><span class="n">NN</span><span class="p">);</span>
+  
+  <span class="n">cpu1</span> <span class="o">=</span> <span class="n">second</span><span class="p">();</span>
+  <span class="n">cpu1</span> <span class="o">=</span> <span class="n">cpu1</span> <span class="o">-</span> <span class="n">cpu0</span><span class="p">;</span>
+
+  <span class="n">nflop</span> <span class="o">=</span> <span class="p">(</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">imax</span><span class="mi">-2</span><span class="p">)</span><span class="o">*</span><span class="mi">34</span><span class="p">;</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="n">cpu1</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">xmflops2</span> <span class="o">=</span> <span class="n">nflop</span><span class="o">/</span><span class="n">cpu1</span><span class="o">*</span><span class="mf">1.0e-6</span><span class="o">*</span><span class="p">(</span><span class="n">real</span><span class="p">)</span><span class="n">NN</span><span class="p">;</span>
+
+  <span class="n">score</span> <span class="o">=</span> <span class="n">xmflops2</span><span class="o">/</span><span class="mf">32.27</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">cpu : %f sec.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">cpu1</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Loop executed for %d times</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">NN</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Gosa : %e </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">gosa</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;MFLOPS measured : %f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">xmflops2</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Score based on MMX Pentium 200MHz : %f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">score</span><span class="p">);</span>
+  
+  <span class="c1">// Now estimate how many iterations could be done in 20s</span>
+  <span class="kt">int</span> <span class="n">nn2</span> <span class="o">=</span> <span class="mf">20.0</span><span class="o">/</span><span class="n">cpu1</span><span class="o">*</span><span class="n">NN</span><span class="p">;</span>
+  <span class="n">cpu0</span> <span class="o">=</span> <span class="n">second</span><span class="p">();</span>
+  <span class="n">gosa</span> <span class="o">=</span> <span class="n">jacobi</span><span class="p">(</span><span class="n">nn2</span><span class="p">);</span>
+  <span class="n">cpu1</span> <span class="o">=</span> <span class="n">second</span><span class="p">();</span>
+  <span class="n">cpu1</span> <span class="o">=</span> <span class="n">cpu1</span> <span class="o">-</span> <span class="n">cpu0</span><span class="p">;</span>
+
+  <span class="n">nflop</span> <span class="o">=</span> <span class="p">(</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">imax</span><span class="mi">-2</span><span class="p">)</span><span class="o">*</span><span class="mi">34</span><span class="p">;</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="n">cpu1</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">xmflops2</span> <span class="o">=</span> <span class="n">nflop</span><span class="o">/</span><span class="n">cpu1</span><span class="o">*</span><span class="mf">1.0e-6</span><span class="o">*</span><span class="p">(</span><span class="n">real</span><span class="p">)</span><span class="n">nn2</span><span class="p">;</span>
+
+  <span class="n">score</span> <span class="o">=</span> <span class="n">xmflops2</span><span class="o">/</span><span class="mf">32.27</span><span class="p">;</span>
+  
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">cpu : %f sec.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">cpu1</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Loop executed for %d times</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">nn2</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Gosa : %e </span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">gosa</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;MFLOPS measured : %f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">xmflops2</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Score based on MMX Pentium 200MHz : %f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">score</span><span class="p">);</span>
+  
+  <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">initmt</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">;</span>
+
+  <span class="c1">// TODO: Implement data initialization with OpenACC on device</span>
+  
+  <span class="c1">// TODO: Implement computation with OpenACC on device</span>
+  <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">imax</span> <span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">jmax</span> <span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+      <span class="k">for</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span> <span class="n">k</span><span class="o">&lt;</span><span class="n">kmax</span> <span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">){</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">wrk1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">bnd</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+      <span class="p">}</span>
+
+  <span class="c1">// TODO: Implement computation with OpenACC on device</span>
+  <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">imax</span> <span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">jmax</span> <span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+      <span class="k">for</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">0</span> <span class="p">;</span> <span class="n">k</span><span class="o">&lt;</span><span class="n">kmax</span> <span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">){</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="p">;</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="p">;</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="p">;</span>
+        <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">6.0</span><span class="p">;</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="p">;</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="p">;</span>
+        <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="p">;</span>
+        <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="n">real</span><span class="p">)(</span><span class="n">k</span><span class="o">*</span><span class="n">k</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">real</span><span class="p">)((</span><span class="n">kmax</span><span class="mi">-1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">kmax</span><span class="mi">-1</span><span class="p">));</span>
+        <span class="n">wrk1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span><span class="p">;</span>
+        <span class="n">bnd</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="mf">1.0</span><span class="p">;</span>
+      <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">real</span> <span class="nf">jacobi</span><span class="p">(</span><span class="kt">int</span> <span class="n">nn</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">n</span><span class="p">;</span>
+  <span class="n">real</span> <span class="n">gosa</span><span class="p">,</span> <span class="n">s0</span><span class="p">,</span> <span class="n">ss</span><span class="p">;</span>
+
+  <span class="c1">// TODO: Implement data initialization with OpenACC on device</span>
+  <span class="k">for</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">n</span><span class="o">&lt;</span><span class="n">nn</span><span class="p">;</span><span class="o">++</span><span class="n">n</span><span class="p">){</span>
+    <span class="n">gosa</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+
+    <span class="c1">// TODO: Implement computation with OpenACC on device</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">imax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+      <span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">jmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+        <span class="k">for</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">k</span><span class="o">&lt;</span><span class="n">kmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">){</span>
+          <span class="n">s0</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span>  <span class="p">]</span>
+             <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span>  <span class="p">]</span>
+             <span class="o">+</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+             <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span>  <span class="p">]</span> <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="mi">-1</span><span class="p">][</span><span class="n">k</span>  <span class="p">]</span>
+                               <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="mi">-1</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span>  <span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="mi">-1</span><span class="p">][</span><span class="n">j</span><span class="mi">-1</span><span class="p">][</span><span class="n">k</span>  <span class="p">]</span> <span class="p">)</span>
+             <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span><span class="mi">-1</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                               <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">k</span><span class="mi">-1</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span><span class="mi">-1</span><span class="p">][</span><span class="n">k</span><span class="mi">-1</span><span class="p">]</span> <span class="p">)</span>
+             <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="mi">-1</span><span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                               <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span><span class="mi">-1</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="mi">-1</span><span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span><span class="mi">-1</span><span class="p">]</span> <span class="p">)</span>
+             <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="mi">-1</span><span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span>  <span class="p">]</span>
+             <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span><span class="mi">-1</span><span class="p">][</span><span class="n">k</span>  <span class="p">]</span>
+             <span class="o">+</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span>  <span class="p">][</span><span class="n">j</span>  <span class="p">][</span><span class="n">k</span><span class="mi">-1</span><span class="p">]</span>
+             <span class="o">+</span> <span class="n">wrk1</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">];</span>
+
+          <span class="n">ss</span> <span class="o">=</span> <span class="p">(</span> <span class="n">s0</span> <span class="o">*</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="p">)</span> <span class="o">*</span> <span class="n">bnd</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">];</span>
+
+	  <span class="n">gosa</span> <span class="o">=</span> <span class="n">gosa</span> <span class="o">+</span> <span class="n">ss</span><span class="o">*</span><span class="n">ss</span><span class="p">;</span>
+
+          <span class="n">wrk2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">ss</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;nn %d, gosa %f</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">gosa</span><span class="p">);</span>
+
+    <span class="c1">// TODO: Implement computation with OpenACC on device</span>
+    <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">imax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+      <span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">jmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+        <span class="k">for</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">k</span><span class="o">&lt;</span><span class="n">kmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">)</span>
+          <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">wrk2</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">];</span>
+  <span class="p">}</span> <span class="cm">/* end n loop */</span>
+
+  <span class="k">return</span><span class="p">(</span><span class="n">gosa</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">double</span> <span class="nf">second</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sys/time.h&gt;</span><span class="cp"></span>
+
+  <span class="k">struct</span> <span class="nc">timeval</span> <span class="n">tm</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">t</span> <span class="p">;</span>
+
+  <span class="k">static</span> <span class="kt">int</span> <span class="n">base_sec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span><span class="n">base_usec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+  <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tm</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="n">base_sec</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">base_usec</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">{</span>
+      <span class="n">base_sec</span> <span class="o">=</span> <span class="n">tm</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">;</span>
+      <span class="n">base_usec</span> <span class="o">=</span> <span class="n">tm</span><span class="p">.</span><span class="n">tv_usec</span><span class="p">;</span>
+      <span class="n">t</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="p">)</span> <span class="p">(</span><span class="n">tm</span><span class="p">.</span><span class="n">tv_sec</span><span class="o">-</span><span class="n">base_sec</span><span class="p">)</span> <span class="o">+</span> 
+      <span class="p">((</span><span class="kt">double</span><span class="p">)</span> <span class="p">(</span><span class="n">tm</span><span class="p">.</span><span class="n">tv_usec</span><span class="o">-</span><span class="n">base_usec</span><span class="p">))</span><span class="o">/</span><span class="mf">1.0e6</span> <span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="n">t</span> <span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-1" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-1" name="0-1" role="tabpanel" tabindex="0"><div class="highlight-fortran notranslate"><div class="highlight"><pre><span></span>C*********************************************************************
+C
+C This benchmark test program is measuring a cpu performance
+C of floating point operation by a Poisson equation solver.
+CC
+C If you have any question, please ask me via email.
+C written by Ryutaro HIMENO, November 26, 2001.
+C Version 3.0
+C ----------------------------------------------
+C Ryutaro Himeno, Dr. of Eng.
+C Head of Computer Information Division,
+C RIKEN (The Institute of Pysical and Chemical Research)
+C Email : himeno@postman.riken.go.jp
+C ---------------------------------------------------------------
+C You can adjust the size of this benchmark code to fit your target
+C computer. In that case, please chose following sets of
+C (mimax,mjmax,mkmax):
+C small : 65,33,33
+C small : 129,65,65
+C midium: 257,129,129
+C large : 513,257,257
+C ext.large: 1025,513,513
+C This program is to measure a computer performance in MFLOPS
+C by using a kernel which appears in a linear solver of pressure
+C Poisson eq. which appears in an incompressible Navier-Stokes solver.
+C A point-Jacobi method is employed in this solver as this method can 
+C be easyly vectrized and be parallelized.
+C ------------------
+C Finite-difference method, curvilinear coodinate system
+C Vectorizable and parallelizable on each grid point
+C No. of grid points : imax x jmax x kmax including boundaries
+C ------------------
+C A,B,C:coefficient matrix, wrk1: source term of Poisson equation
+C wrk2 : working area, OMEGA : relaxation parameter
+C BND:control variable for boundaries and objects ( = 0 or 1)
+C P: pressure
+C -------------------
+
+      INCLUDE &quot;himeno_f77.h&quot;
+C
+C     ttarget specifys the measuring period in sec
+	PARAMETER (ttarget=60.0)
+
+      REAL*8 cpu,cpu0,cpu1,gettime
+      EXTERNAL gettime
+
+      omega=0.8
+      imax=mimax-1
+      jmax=mjmax-1
+      kmax=mkmax-1
+CC Initializing matrixes
+      call initmt
+      write(*,*) &#39; mimax=&#39;,mimax,&#39; mjmax=&#39;,mjmax,&#39; mkmax=&#39;,mkmax
+      write(*,*) &#39; imax=&#39;,imax,&#39; jmax=&#39;,jmax,&#39; kmax=&#39;,kmax
+CC Start measuring
+C
+      nn=3
+      write(*,*) &#39; Start rehearsal measurement process.&#39;
+      write(*,*) &#39; Measure the performance in 3 times.&#39;
+C
+      cpu0=gettime()
+C
+C Jacobi iteration
+      call jacobi(nn,gosa)
+C
+      cpu1= gettime()
+      cpu = cpu1-cpu0
+      flop=real(kmax-2)*real(jmax-2)*real(imax-2)*34.0*real(nn)
+      xmflops2=flop/cpu*1.0e-6
+      write(*,*) &#39; Gosa :&#39;,gosa
+      write(*,*) &#39;  MFLOPS:&#39;,xmflops2,&#39;  time(s):&#39;,cpu
+C
+C     end the test loop
+
+C AH: This estimate is now used to choose a number of iterations for the 
+C     main performance measurement (aiming to take around a minute)
+      nn=int(ttarget/(cpu/3.0))
+      write(*,*) &#39;Now, start the actual measurement process.&#39;
+      write(*,*) &#39;The loop will be excuted in&#39;,nn,&#39; times.&#39;
+      write(*,*) &#39;This will take about one minute.&#39;
+      write(*,*) &#39;Wait for a while.&#39;
+C
+C Jacobi iteration
+      cpu0=gettime()
+      call jacobi(nn,gosa)
+C
+      cpu1= gettime()
+      cpu = cpu1-cpu0
+      flop=real(kmax-2)*real(jmax-2)*real(imax-2)*34.0*real(nn)
+      xmflops2=flop*1.0e-6/cpu
+C
+CCC      xmflops2=nflop/cpu*1.0e-6*float(nn)
+C
+      write(*,*) &#39; Loop executed for &#39;,nn,&#39; times&#39;
+      write(*,*) &#39; Gosa :&#39;,gosa
+      write(*,*) &#39; MFLOPS:&#39;,xmflops2, &#39;  time(s):&#39;,cpu
+      score=xmflops2/82.84
+      write(*,*) &#39; Score based on Pentium III 600MHz :&#39;,score
+C
+c      pause
+c      stop
+      END
+C
+C
+C**************************************************************
+      subroutine initmt
+C**************************************************************
+      
+      INCLUDE &quot;himeno_f77.h&quot;
+
+C TODO: Implement data initialization with OpenACC on device
+  
+C TODO: Implement computation with OpenACC on device
+
+      do k=1,mkmax
+         do j=1,mjmax
+            do i=1,mimax
+               a(i,j,k,1)=0.0
+               a(i,j,k,2)=0.0
+               a(i,j,k,3)=0.0
+               a(i,j,k,4)=0.0
+               b(i,j,k,1)=0.0
+               b(i,j,k,2)=0.0
+               b(i,j,k,3)=0.0
+               c(i,j,k,1)=0.0
+               c(i,j,k,2)=0.0
+               c(i,j,k,3)=0.0
+               p(i,j,k) =0.0
+               wrk1(i,j,k)=0.0   
+               bnd(i,j,k)=0.0 
+            enddo
+         enddo
+      enddo
+C
+      do k=1,kmax
+         do j=1,jmax
+            do i=1,imax
+               a(i,j,k,1)=1.0
+               a(i,j,k,2)=1.0
+               a(i,j,k,3)=1.0
+               a(i,j,k,4)=1.0/6.0
+               b(i,j,k,1)=0.0
+               b(i,j,k,2)=0.0
+               b(i,j,k,3)=0.0
+               c(i,j,k,1)=1.0
+               c(i,j,k,2)=1.0
+               c(i,j,k,3)=1.0
+               p(i,j,k) =float((k-1)*(k-1))/float((kmax-1)*(kmax-1))
+               wrk1(i,j,k)=0.0
+               bnd(i,j,k)=1.0
+            enddo
+         enddo
+      enddo
+C
+      return
+      end
+C
+C*************************************************************
+      subroutine jacobi(nn,gosa)
+C*************************************************************
+
+      INCLUDE &quot;himeno_f77.h&quot;
+
+C TODO: Implement data initialization with OpenACC on device
+  
+      DO loop=1,nn
+         gosa=0.0
+C
+C TODO: Implement computation with OpenACC on device
+         gosa1= 0.0
+         DO K=2,kmax-1
+            DO J=2,jmax-1
+               DO I=2,imax-1
+                  S0=a(I,J,K,1)*p(I+1,J,K)+a(I,J,K,2)*p(I,J+1,K)
+     1                 +a(I,J,K,3)*p(I,J,K+1)
+     2                 +b(I,J,K,1)*(p(I+1,J+1,K)-p(I+1,J-1,K)
+     3                 -p(I-1,J+1,K)+p(I-1,J-1,K))
+     4                 +b(I,J,K,2)*(p(I,J+1,K+1)-p(I,J-1,K+1)
+     5                 -p(I,J+1,K-1)+p(I,J-1,K-1))
+     6                 +b(I,J,K,3)*(p(I+1,J,K+1)-p(I-1,J,K+1)
+     7                 -p(I+1,J,K-1)+p(I-1,J,K-1))
+     8                 +c(I,J,K,1)*p(I-1,J,K)+c(I,J,K,2)*p(I,J-1,K)
+     9                 +c(I,J,K,3)*p(I,J,K-1)+wrk1(I,J,K)
+                  SS=(S0*a(I,J,K,4)-p(I,J,K))*bnd(I,J,K)
+                  GOSA1=GOSA1+SS*SS
+                  wrk2(I,J,K)=p(I,J,K)+OMEGA *SS
+               enddo
+            enddo
+         enddo
+
+C TODO: Implement computation with OpenACC on device
+         DO K=2,kmax-1
+            DO J=2,jmax-1
+               DO I=2,imax-1
+                  p(I,J,K)=wrk2(I,J,K)
+               enddo
+            enddo
+         enddo
+
+         gosa= gosa + gosa1
+
+C
+      enddo
+
+      return
+      end
+
+C*************************************************************
+
+C AH: Added this function to provide timing.
+C     It uses Fortran90.
+
+C*************************************************************
+      function gettime() result(rtime)
+C*************************************************************
+
+      implicit none
+
+      integer(kind=selected_int_kind(18)) :: ic,ir,im
+      real(kind=8) :: rtime
+
+      call system_clock(ic,ir,im)
+
+      rtime= real(ic,8)/real(ir,8)
+
+      end function 
+</pre></div>
+</div>
+</div></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ srun -n <span class="m">1</span> nvprof --cpu-profiling on --cpu-profiling-mode top-down ./himeno.x
+<span class="o">========</span> CPU profiling result <span class="o">(</span>top down<span class="o">)</span>:
+Time<span class="o">(</span>%<span class="o">)</span>      Time  Name
+<span class="m">85</span>.74%    <span class="m">18</span>.16s  jacobi
+ <span class="m">7</span>.46%     <span class="m">1</span>.58s  initmt
+ <span class="m">0</span>.94%     200ms  <span class="p">|</span> ???
+ <span class="m">6</span>.75%     <span class="m">1</span>.43s  __c_mcopy4_sky
+ <span class="m">0</span>.05%      10ms  __c_mcopy4
+</pre></div>
+</div>
+<div class="section" id="openacc-data-model">
+<h3>OpenACC data model<a class="headerlink" href="#openacc-data-model" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Define a region with data declared in the device memory</p>
+<ul>
+<li><p>C/C++: <code class="docutils literal notranslate"><span class="pre">#pragma</span> <span class="pre">acc</span> <span class="pre">data</span> <span class="pre">[clauses]</span></code></p></li>
+<li><p>Fortran: <code class="docutils literal notranslate"><span class="pre">!$acc</span> <span class="pre">data</span> <span class="pre">[clauses]</span></code></p></li>
+<li><p>clauses can be <code class="docutils literal notranslate"><span class="pre">copy</span></code>, <code class="docutils literal notranslate"><span class="pre">copyin</span></code>, <code class="docutils literal notranslate"><span class="pre">copyout</span></code>, and <code class="docutils literal notranslate"><span class="pre">present</span></code></p></li>
+</ul>
+</li>
+<li><p>Data transfers take place</p>
+<ul>
+<li><p>from the <strong>host</strong> to the <strong>device</strong> upon entry to the region</p></li>
+<li><p>from the <strong>device</strong> to the <strong>host</strong> upon exit from the region</p></li>
+</ul>
+</li>
+<li><p>Functionality defined by <em>data clauses</em></p></li>
+<li><p><em>Data clauses</em> can also be used in <code class="docutils literal notranslate"><span class="pre">kernels</span></code> and <code class="docutils literal notranslate"><span class="pre">parallel</span></code>
+constructs</p></li>
+</ul>
+</div>
+<div class="section" id="openacc-execution-model">
+<h3>OpenACC execution model<a class="headerlink" href="#openacc-execution-model" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>OpenACC includes two different approaches for defining parallel
+regions</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">kernels</span></code> defines a region to be transferred into a series of
+kernels to be executed in <em>sequence</em> on an accelerator. Work
+sharing parallelism is defined <em>automatically</em> for the separate
+kernels, but tuning prospects limited.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parallel</span></code> defines a region to be executed on an accelerator.
+Work sharing <em>parallelism</em> has to be defined <em>manually</em>. Good
+tuning prospects.</p></li>
+<li><p>C/C++: <code class="docutils literal notranslate"><span class="pre">#pragma</span> <span class="pre">kernels</span></code>, <code class="docutils literal notranslate"><span class="pre">#pragma</span> <span class="pre">parallel</span> <span class="pre">loop</span></code></p></li>
+<li><p>Fortran: <code class="docutils literal notranslate"><span class="pre">!acc</span> <span class="pre">kernels</span></code>, <code class="docutils literal notranslate"><span class="pre">!$acc</span> <span class="pre">parallel</span> <span class="pre">loop</span></code></p></li>
+</ul>
+</li>
+<li><p>With similar work sharing, both can perform equally well</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../1.03_openacc_optimization/" class="btn btn-neutral float-right" title="OpenACC: Optimization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../0.01_gpu-introduction/" class="btn btn-neutral float-left" title="Introduction to GPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, EuroCC National Competence Centre Sweden.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

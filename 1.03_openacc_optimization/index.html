@@ -1,0 +1,525 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>OpenACC: Optimization &mdash; Intermediate OpenACC/CUDA  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_lesson.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_rtd_theme_ext_color_contrast.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/overrides.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/togglebutton.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/minipres.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex/" />
+    <link rel="search" title="Search" href="../search/" />
+    <link rel="next" title="CUDA: Optimizing the GPU kernel" href="../3.01_ParallelReduction1/" />
+    <link rel="prev" title="OpenACC: Analysis and Parallelization" href="../1.02_openacc_profiling/" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../" class="icon icon-home"> Intermediate OpenACC/CUDA
+          
+
+          
+            
+            <img src="../_static/ENCCS.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search/" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../0.01_gpu-introduction/">Introduction to GPU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../1.02_openacc_profiling/">OpenACC: Analysis and Parallelization</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OpenACC: Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#optimizing-data-movement">Optimizing data movement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optimize-loop-performance">Optimize Loop performance</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#collapse-clause">Collapse Clause</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#loop-directives">Loop directives</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#what-values-should-i-try">What values should I try?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#device-data-interoperability">Device data interoperability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#calling-cuda-kernel-from-openacc-program">Calling CUDA-kernel from OpenACC-program</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../3.01_ParallelReduction1/">CUDA: Optimizing the GPU kernel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../3.02_TaskParallelism/">CUDA: Asynchronous execution</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../setup/">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-reference/">Quick Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/">Instructor’s guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../">Intermediate OpenACC/CUDA</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>OpenACC: Optimization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/ENCCS/OpenACC-CUDA-intermediate/blob/main/content/1.03_openacc_optimization.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="openacc-optimization">
+<span id="id1"></span><h1>OpenACC: Optimization<a class="headerlink" href="#openacc-optimization" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p>Data movement is an important part to optimize when using GPUs</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Keeping data on the GPU as long as possible</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Getting the compiler to generate parallel code</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Addressing loop performance optimization</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Data access and execution divergence are important for GPU performance</p></li>
+</ul>
+<div class="section" id="optimizing-data-movement">
+<h2>Optimizing data movement<a class="headerlink" href="#optimizing-data-movement" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Constructs and clauses for</p>
+<ul>
+<li><p>defining the variables on the device</p></li>
+<li><p>transferring data to/from the device</p></li>
+</ul>
+</li>
+<li><p>All variables used inside the <code class="docutils literal notranslate"><span class="pre">parallel</span></code> or <code class="docutils literal notranslate"><span class="pre">kernels</span></code> region will
+be treated as <em>implicit</em> variables if they are not present in any
+data clauses, i.e. copying to and from to the device is automatically
+performed</p></li>
+<li><p>Minimize the data transfer between host and device</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span> <span class="k">for</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">n</span><span class="o">&lt;</span><span class="n">nn</span><span class="p">;</span><span class="o">++</span><span class="n">n</span><span class="p">){</span>
+  <span class="n">gosa</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+
+<span class="cp">#pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)</span>
+   <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">imax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(refer to <em>examples/OpenACC/himeno/solution/C/himeno_C_v01.c</em>)</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">export</span> <span class="n">PGI_ACC_TIME</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">$</span> <span class="n">cp</span> <span class="n">himeno_C_v01</span><span class="p">.</span><span class="n">c</span> <span class="n">himeno_C</span><span class="p">.</span><span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">make</span>
+ <span class="p">...</span>
+    <span class="mi">215</span><span class="p">,</span> <span class="n">Generating</span> <span class="n">implicit</span> <span class="n">copyout</span><span class="p">(</span><span class="n">wrk2</span><span class="p">[</span><span class="mi">1</span><span class="o">:</span><span class="n">imax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">])</span> <span class="p">[</span><span class="k">if</span> <span class="n">not</span> <span class="n">already</span> <span class="n">present</span><span class="p">]</span>
+        <span class="n">Generating</span> <span class="n">implicit</span> <span class="n">copyin</span><span class="p">(</span><span class="n">wrk1</span><span class="p">[</span><span class="mi">1</span><span class="o">:</span><span class="n">imax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">])</span> <span class="p">[</span><span class="k">if</span> <span class="n">not</span> <span class="n">already</span> <span class="n">present</span><span class="p">]</span>
+        <span class="n">Generating</span> <span class="n">implicit</span> <span class="n">copy</span><span class="p">(</span><span class="n">gosa</span><span class="p">)</span> <span class="p">[</span><span class="k">if</span> <span class="n">not</span> <span class="n">already</span> <span class="n">present</span><span class="p">]</span>
+        <span class="n">Generating</span> <span class="n">implicit</span> <span class="n">copyin</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="o">:</span><span class="n">imax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">][</span><span class="o">:</span><span class="p">],</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="o">:</span><span class="n">imax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">][</span><span class="o">:</span><span class="p">],</span><span class="n">bnd</span><span class="p">[</span><span class="mi">1</span><span class="o">:</span><span class="n">imax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">],</span><span class="n">p</span><span class="p">[</span><span class="o">:</span><span class="n">imax</span><span class="p">][</span><span class="o">:</span><span class="n">jmax</span><span class="p">][</span><span class="o">:</span><span class="n">kmax</span><span class="p">],</span><span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="o">:</span><span class="n">imax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">jmax</span><span class="mi">-2</span><span class="p">][</span><span class="mi">1</span><span class="o">:</span><span class="n">kmax</span><span class="mi">-2</span><span class="p">][</span><span class="o">:</span><span class="p">])</span> <span class="p">[</span><span class="k">if</span> <span class="n">not</span> <span class="n">already</span> <span class="n">present</span><span class="p">]</span>
+
+<span class="n">$</span> <span class="n">sbatch</span> <span class="n">run_himeno</span><span class="p">.</span><span class="n">sh</span>
+ <span class="n">jacobi</span>  <span class="n">NVIDIA</span>  <span class="n">devicenum</span><span class="o">=</span><span class="mi">0</span>
+   <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="mi">26</span><span class="p">,</span><span class="mi">955</span><span class="p">,</span><span class="mi">638</span>
+   <span class="mi">215</span><span class="o">:</span> <span class="n">compute</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">4</span> <span class="n">times</span>
+       <span class="mi">215</span><span class="o">:</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">4</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">510</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
+           <span class="n">elapsed</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="mi">708</span> <span class="n">max</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="mo">01</span><span class="mi">9</span> <span class="n">min</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="mi">894</span> <span class="n">avg</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="mi">927</span>
+       <span class="mi">215</span><span class="o">:</span> <span class="n">reduction</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">4</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">256</span><span class="p">]</span>
+           <span class="n">elapsed</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">85</span> <span class="n">max</span><span class="o">=</span><span class="mi">29</span> <span class="n">min</span><span class="o">=</span><span class="mi">18</span> <span class="n">avg</span><span class="o">=</span><span class="mi">21</span>
+   <span class="mi">215</span><span class="o">:</span> <span class="n">data</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">8</span> <span class="n">times</span>
+       <span class="mi">215</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyin</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">3115092</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span><span class="mi">563</span><span class="p">,</span><span class="mi">324</span> <span class="n">max</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span><span class="mi">863</span> <span class="n">min</span><span class="o">=</span><span class="mi">5</span> <span class="n">avg</span><span class="o">=</span><span class="mi">6</span>
+       <span class="mi">237</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyout</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">518164</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="mi">392</span><span class="p">,</span><span class="mi">314</span> <span class="n">max</span><span class="o">=</span><span class="mi">27</span><span class="p">,</span><span class="mi">802</span> <span class="n">min</span><span class="o">=</span><span class="mi">11</span> <span class="n">avg</span><span class="o">=</span><span class="mi">12</span>
+</pre></div>
+</div>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma acc data copyin(a,b,c,bnd,wrk1) copy(p) create(wrk2)</span>
+ <span class="p">{</span>
+ <span class="k">for</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">n</span><span class="o">&lt;</span><span class="n">nn</span><span class="p">;</span><span class="o">++</span><span class="n">n</span><span class="p">){</span>
+   <span class="n">gosa</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+
+<span class="cp">#pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)</span>
+   <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">imax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+     <span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">jmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+       <span class="k">for</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">k</span><span class="o">&lt;</span><span class="n">kmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">){</span>
+</pre></div>
+</div>
+<p>(refer to <em>examples/OpenACC/himeno/solution/C/himeno_C_v02.c</em>)</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">export</span> <span class="n">PGI_ACC_TIME</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">$</span> <span class="n">cp</span> <span class="n">himeno_C_v02</span><span class="p">.</span><span class="n">c</span> <span class="n">himeno_C</span><span class="p">.</span><span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">make</span>
+<span class="n">$</span> <span class="n">sbatch</span> <span class="n">run_himeno</span><span class="p">.</span><span class="n">sh</span>
+ <span class="n">jacobi</span>  <span class="n">NVIDIA</span>  <span class="n">devicenum</span><span class="o">=</span><span class="mi">0</span>
+   <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="mi">384</span><span class="p">,</span><span class="mi">219</span>
+   <span class="mi">212</span><span class="o">:</span> <span class="n">data</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">4</span> <span class="n">times</span>
+       <span class="mi">212</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyin</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">220</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">308</span><span class="p">,</span><span class="mi">182</span> <span class="n">max</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">483</span> <span class="n">min</span><span class="o">=</span><span class="mi">121</span> <span class="n">avg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">400</span>
+       <span class="mi">247</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyout</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">18</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">74</span><span class="p">,</span><span class="mi">577</span> <span class="n">max</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="mi">861</span> <span class="n">min</span><span class="o">=</span><span class="mi">327</span> <span class="n">avg</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="mi">143</span>
+   <span class="mi">217</span><span class="o">:</span> <span class="n">compute</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">83</span> <span class="n">times</span>
+       <span class="mi">217</span><span class="o">:</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">83</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">510</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
+           <span class="n">elapsed</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">345</span><span class="p">,</span><span class="mi">316</span> <span class="n">max</span><span class="o">=</span><span class="mi">28</span><span class="p">,</span><span class="mi">382</span> <span class="n">min</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="mi">813</span> <span class="n">avg</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="mi">160</span>
+       <span class="mi">217</span><span class="o">:</span> <span class="n">reduction</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">83</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">256</span><span class="p">]</span>
+           <span class="n">elapsed</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">473</span> <span class="n">max</span><span class="o">=</span><span class="mi">38</span> <span class="n">min</span><span class="o">=</span><span class="mi">16</span> <span class="n">avg</span><span class="o">=</span><span class="mi">17</span>
+   <span class="mi">217</span><span class="o">:</span> <span class="n">data</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">166</span> <span class="n">times</span>
+       <span class="mi">217</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyin</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">83</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">431</span> <span class="n">max</span><span class="o">=</span><span class="mi">13</span> <span class="n">min</span><span class="o">=</span><span class="mi">5</span> <span class="n">avg</span><span class="o">=</span><span class="mi">5</span>
+       <span class="mi">239</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyout</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">83</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mo">02</span><span class="mi">9</span> <span class="n">max</span><span class="o">=</span><span class="mi">24</span> <span class="n">min</span><span class="o">=</span><span class="mi">11</span> <span class="n">avg</span><span class="o">=</span><span class="mi">12</span>
+   <span class="mi">242</span><span class="o">:</span> <span class="n">compute</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">83</span> <span class="n">times</span>
+       <span class="mi">242</span><span class="o">:</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">83</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">510</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
+           <span class="n">elapsed</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span><span class="mi">775</span> <span class="n">max</span><span class="o">=</span><span class="mi">885</span> <span class="n">min</span><span class="o">=</span><span class="mi">852</span> <span class="n">avg</span><span class="o">=</span><span class="mi">864</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="optimize-loop-performance">
+<h2>Optimize Loop performance<a class="headerlink" href="#optimize-loop-performance" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>The compiler is usually pretty good at choosing how to break up loop iterations to run well on parallel accelerators.</p></li>
+<li><p>Sometimes we can obtain more performance by guiding the compiler to make specific choices.</p></li>
+</ul>
+<div class="section" id="collapse-clause">
+<h3>Collapse Clause<a class="headerlink" href="#collapse-clause" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>collapse(N)</p>
+<ul>
+<li><p>Same as in OpenMP, take the next N tightly nested loops and flatten them into a one loop</p></li>
+<li><p>Can be beneficial when loops are small</p></li>
+<li><p>Breaks the next loops into tiles (blocks) before parallelizing the loops</p></li>
+<li><p>For certain memory access patterns this can improve data locality</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma acc parallel loop collapse(3) private(i,j,k,s0,ss) reduction(+:gosa)</span>
+   <span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">imax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+     <span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">jmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+       <span class="k">for</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">1</span> <span class="p">;</span> <span class="n">k</span><span class="o">&lt;</span><span class="n">kmax</span><span class="mi">-1</span> <span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">){</span>
+</pre></div>
+</div>
+<p>(refer to <em>examples/OpenACC/himeno/solution/C/himeno_C_v03.c</em>)</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">$</span> <span class="n">export</span> <span class="n">PGI_ACC_TIME</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">$</span> <span class="n">cp</span> <span class="n">himeno_C_v03</span><span class="p">.</span><span class="n">c</span> <span class="n">himeno_C</span><span class="p">.</span><span class="n">c</span> <span class="o">&amp;&amp;</span> <span class="n">make</span>
+<span class="n">$</span> <span class="n">sbatch</span> <span class="n">run_himeno</span><span class="p">.</span><span class="n">sh</span>
+ <span class="n">jacobi</span>  <span class="n">NVIDIA</span>  <span class="n">devicenum</span><span class="o">=</span><span class="mi">0</span>
+   <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="mi">22</span><span class="p">,</span><span class="mi">300</span>
+   <span class="mi">221</span><span class="o">:</span> <span class="n">data</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">4</span> <span class="n">times</span>
+   <span class="mi">226</span><span class="o">:</span> <span class="n">compute</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">1322</span> <span class="n">times</span>
+       <span class="mi">226</span><span class="o">:</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">1322</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">65535</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
+           <span class="n">elapsed</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="mo">012</span><span class="p">,</span><span class="mi">812</span> <span class="n">max</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span><span class="mo">035</span> <span class="n">min</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="mi">960</span> <span class="n">avg</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="mo">035</span>
+       <span class="mi">226</span><span class="o">:</span> <span class="n">reduction</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">1322</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">256</span><span class="p">]</span>
+           <span class="n">elapsed</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span><span class="mi">708</span> <span class="n">max</span><span class="o">=</span><span class="mi">138</span> <span class="n">min</span><span class="o">=</span><span class="mi">95</span> <span class="n">avg</span><span class="o">=</span><span class="mi">97</span>
+   <span class="mi">226</span><span class="o">:</span> <span class="n">data</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">2644</span> <span class="n">times</span>
+       <span class="mi">226</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyin</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">1322</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span><span class="mi">627</span> <span class="n">max</span><span class="o">=</span><span class="mi">10</span> <span class="n">min</span><span class="o">=</span><span class="mi">5</span> <span class="n">avg</span><span class="o">=</span><span class="mi">5</span>
+       <span class="mi">248</span><span class="o">:</span> <span class="n">data</span> <span class="n">copyout</span> <span class="nl">transfers</span><span class="p">:</span> <span class="mi">1322</span>
+            <span class="n">device</span> <span class="n">time</span><span class="p">(</span><span class="n">us</span><span class="p">)</span><span class="o">:</span> <span class="n">total</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span><span class="mi">673</span> <span class="n">max</span><span class="o">=</span><span class="mi">94</span> <span class="n">min</span><span class="o">=</span><span class="mi">10</span> <span class="n">avg</span><span class="o">=</span><span class="mi">11</span>
+   <span class="mi">251</span><span class="o">:</span> <span class="n">compute</span> <span class="n">region</span> <span class="n">reached</span> <span class="mi">1322</span> <span class="n">times</span>
+       <span class="mi">251</span><span class="o">:</span> <span class="n">kernel</span> <span class="n">launched</span> <span class="mi">1322</span> <span class="n">times</span>
+           <span class="nl">grid</span><span class="p">:</span> <span class="p">[</span><span class="mi">65535</span><span class="p">]</span>  <span class="nl">block</span><span class="p">:</span> <span class="p">[</span><span class="mi">128</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="loop-directives">
+<h3>Loop directives<a class="headerlink" href="#loop-directives" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Loop directive accepts several fine-tuning clauses, OpenACC has three levels of parallelism</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gang</span></code> – have one or more workers that share resources, such as streaming multiprocessor - Multiple gangs work independently</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">worker</span></code> – compute a vector</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vector</span></code> – threads work in SIMT (SIMD) fashion</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seq</span></code> – run sequentially</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>Multiple levels can be applied to a loop nest, but they have to be applied in top-down order</p></li>
+<li><p>By default, when programming for a GPU, gang and vector parallelism is automatically applied.</p></li>
+</ul>
+<img alt="../_images/gang_worker_vector.png" src="../_images/gang_worker_vector.png" />
+<p>This image represents a single gang. When parallelizing our for loops, the loop iterations will be broken up evenly among a number of gangs. Each gang will contain a number of threads. These threads are organized into blocks. A worker is a row of threads. In the above graphic, there are 3 workers, which means that there are 3 rows of threads. The vector refers to how long each row is. So in the above graphic, the vector is 8, because each row is 8 threads long.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma acc parallel num_gangs( 2 ) num_workers( 4 ) vector_length( 32 )</span>
+<span class="p">{</span>
+   <span class="cp">#pragma acc loop gang worker</span>
+   <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+   <span class="p">{</span>
+       <span class="cp">#pragma acc loop vector</span>
+       <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">M</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+       <span class="p">{</span>
+           <span class="o">&lt;</span> <span class="n">loop</span> <span class="n">code</span> <span class="o">&gt;</span>
+       <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Avoid wasting Threads, when parallelizing small arrays, you have to be careful that the number of threads within your vector is not larger than the number of loop iterations.</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma acc kernels loop gang</span>
+<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1000000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="cp">#pragma acc loop vector(256)</span>
+   <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">32</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+   <span class="p">{</span>
+       <span class="o">&lt;</span> <span class="n">loop</span> <span class="n">code</span> <span class="o">&gt;</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The Rule of 32 (Warps): The general rule of thumb for programming for NVIDIA GPUs is to always ensure that your vector length is a multiple of 32 (which means 32, 64, 96, 128, … 512, … 1024… etc.). This is because NVIDIA GPUs are optimized to use warps. Warps are groups of 32 threads that are executing the same computer instruction.</p></li>
+</ul>
+<p>(refer to <em>examples/OpenACC/MG/solution/C/MG/mg_v0[1-8].c</em>)</p>
+</div>
+<div class="section" id="what-values-should-i-try">
+<h3>What values should I try?<a class="headerlink" href="#what-values-should-i-try" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Depends on the accelerator you are using</p></li>
+<li><p>You can try out different combinations, but deterministic optimizations require good knowledge on the accelerator hardware</p>
+<ul>
+<li><p>In the case of NVIDIA GPUs you should start with the NVVP results and refer to CUDA documentation</p></li>
+<li><p>One hard-coded value: for NVIDIA GPUs the vector length should always be 32, which is the (current) warp size</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="device-data-interoperability">
+<h3>Device data interoperability<a class="headerlink" href="#device-data-interoperability" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>OpenACC includes methods to access to device data pointers</p></li>
+<li><p>Device data pointers can be used to interoperate with libraries and other programming techniques available for accelerator devices</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>CUDA kernels and libraries</p></li>
+<li><p>CUDA-aware MPI libraries</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="calling-cuda-kernel-from-openacc-program">
+<h3>Calling CUDA-kernel from OpenACC-program<a class="headerlink" href="#calling-cuda-kernel-from-openacc-program" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Define a device address to be available on the host</p>
+<ul>
+<li><p>C/C++: <code class="docutils literal notranslate"><span class="pre">#pragma</span> <span class="pre">acc</span> <span class="pre">host_data</span> <span class="pre">[clause]</span></code></p></li>
+<li><p>Fortran: <code class="docutils literal notranslate"><span class="pre">!$acc</span> <span class="pre">host_data</span> <span class="pre">[clause]</span></code></p></li>
+</ul>
+</li>
+<li><p>Only a single clause is allowed: C/C++, Fortran: <code class="docutils literal notranslate"><span class="pre">use_device(var-list)</span></code></p></li>
+<li><p>Within the construct, all the variables in var-list are referred to by using their device addresses</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma acc data present(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4],r[0:n1*n2*n3])</span>
+   <span class="p">{</span>
+<span class="cp">#pragma acc host_data use_device(u,v,r,a)</span>
+     <span class="p">{</span>
+       <span class="n">resid_cuda</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="o">&amp;</span><span class="n">n1</span><span class="p">,</span><span class="o">&amp;</span><span class="n">n2</span><span class="p">,</span><span class="o">&amp;</span><span class="n">n3</span><span class="p">,</span><span class="n">a</span><span class="p">);</span>
+     <span class="p">}</span>
+   <span class="p">}</span>
+</pre></div>
+</div>
+<p>(refer to <em>examples/OpenACC/MG/solution/C/MG/mg_v08.c</em>)</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">extern</span> <span class="s">&quot;C&quot;</span> <span class="kt">void</span> <span class="n">resid_cuda</span><span class="p">(</span><span class="kt">double</span> <span class="o">*</span><span class="n">u</span><span class="p">,</span> <span class="kt">double</span> <span class="o">*</span><span class="n">v</span><span class="p">,</span> <span class="kt">double</span> <span class="o">*</span><span class="n">r</span><span class="p">,</span>
+                           <span class="kt">int</span> <span class="o">*</span><span class="n">n1</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">n2</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">n3</span><span class="p">,</span>
+                           <span class="kt">double</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(refer to <em>examples/OpenACC/MG/solution/C/MG/mg_kernels.cu</em>)</p>
+</div>
+<div class="section" id="summary">
+<h3>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Profiling is essential for optimization</p>
+<ul>
+<li><p>NVPROF and NVVP for NVIDIA platform</p></li>
+</ul>
+</li>
+<li><p>Data and Loop optimizations</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../3.01_ParallelReduction1/" class="btn btn-neutral float-right" title="CUDA: Optimizing the GPU kernel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../1.02_openacc_profiling/" class="btn btn-neutral float-left" title="OpenACC: Analysis and Parallelization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, EuroCC National Competence Centre Sweden.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

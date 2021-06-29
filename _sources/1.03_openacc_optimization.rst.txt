@@ -1,0 +1,270 @@
+.. _openacc-optimization:
+
+OpenACC: Optimization
+=====================
+
+- Data movement is an important part to optimize when using GPUs
+
+    - Keeping data on the GPU as long as possible
+- Getting the compiler to generate parallel code
+
+    - Addressing loop performance optimization
+- Data access and execution divergence are important for GPU performance
+
+
+Optimizing data movement
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  Constructs and clauses for
+
+   -  defining the variables on the device
+   -  transferring data to/from the device
+
+-  All variables used inside the ``parallel`` or ``kernels`` region will
+   be treated as *implicit* variables if they are not present in any
+   data clauses, i.e. copying to and from to the device is automatically
+   performed
+
+-  Minimize the data transfer between host and device
+
+.. code :: c 
+
+  for(n=0;n<nn;++n){
+   gosa = 0.0;
+
+ #pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
+    for(i=1 ; i<imax-1 ; ++i)
+
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v01.c*)
+
+.. code :: c
+
+ $ export PGI_ACC_TIME=1
+ $ cp himeno_C_v01.c himeno_C.c && make
+  ...
+     215, Generating implicit copyout(wrk2[1:imax-2][1:jmax-2][1:kmax-2]) [if not already present]
+         Generating implicit copyin(wrk1[1:imax-2][1:jmax-2][1:kmax-2]) [if not already present]
+         Generating implicit copy(gosa) [if not already present]
+         Generating implicit copyin(b[1:imax-2][1:jmax-2][1:kmax-2][:],a[1:imax-2][1:jmax-2][1:kmax-2][:],bnd[1:imax-2][1:jmax-2][1:kmax-2],p[:imax][:jmax][:kmax],c[1:imax-2][1:jmax-2][1:kmax-2][:]) [if not already present]
+
+ $ sbatch run_himeno.sh
+  jacobi  NVIDIA  devicenum=0
+    time(us): 26,955,638
+    215: compute region reached 4 times
+        215: kernel launched 4 times
+            grid: [510]  block: [128]
+            elapsed time(us): total=15,708 max=4,019 min=3,894 avg=3,927
+        215: reduction kernel launched 4 times
+            grid: [1]  block: [256]
+            elapsed time(us): total=85 max=29 min=18 avg=21
+    215: data region reached 8 times
+        215: data copyin transfers: 3115092
+             device time(us): total=20,563,324 max=28,863 min=5 avg=6
+        237: data copyout transfers: 518164
+             device time(us): total=6,392,314 max=27,802 min=11 avg=12
+ 
+.. code :: c
+
+ #pragma acc data copyin(a,b,c,bnd,wrk1) copy(p) create(wrk2)
+  {
+  for(n=0;n<nn;++n){
+    gosa = 0.0;
+
+ #pragma acc parallel loop private(i,j,k,s0,ss) reduction(+:gosa)
+    for(i=1 ; i<imax-1 ; ++i)
+      for(j=1 ; j<jmax-1 ; ++j)
+        for(k=1 ; k<kmax-1 ; ++k){
+
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v02.c*)
+
+.. code :: c
+
+ $ export PGI_ACC_TIME=1
+ $ cp himeno_C_v02.c himeno_C.c && make
+ $ sbatch run_himeno.sh
+  jacobi  NVIDIA  devicenum=0
+    time(us): 384,219
+    212: data region reached 4 times
+        212: data copyin transfers: 220
+             device time(us): total=308,182 max=1,483 min=121 avg=1,400
+        247: data copyout transfers: 18
+             device time(us): total=74,577 max=4,861 min=327 avg=4,143
+    217: compute region reached 83 times
+        217: kernel launched 83 times
+            grid: [510]  block: [128]
+            elapsed time(us): total=345,316 max=28,382 min=3,813 avg=4,160
+        217: reduction kernel launched 83 times
+            grid: [1]  block: [256]
+            elapsed time(us): total=1,473 max=38 min=16 avg=17
+    217: data region reached 166 times
+        217: data copyin transfers: 83
+             device time(us): total=431 max=13 min=5 avg=5
+        239: data copyout transfers: 83
+             device time(us): total=1,029 max=24 min=11 avg=12
+    242: compute region reached 83 times
+        242: kernel launched 83 times
+            grid: [510]  block: [128]
+            elapsed time(us): total=71,775 max=885 min=852 avg=864
+
+Optimize Loop performance
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- The compiler is usually pretty good at choosing how to break up loop iterations to run well on parallel accelerators.
+
+- Sometimes we can obtain more performance by guiding the compiler to make specific choices.
+
+Collapse Clause
+---------------
+
+- collapse(N)
+
+  - Same as in OpenMP, take the next N tightly nested loops and flatten them into a one loop
+  - Can be beneficial when loops are small
+  - Breaks the next loops into tiles (blocks) before parallelizing the loops
+  - For certain memory access patterns this can improve data locality
+
+.. - The collapse clause allows us to transform a multi-dimensional loop nest into a single-dimensional loop. This process is helpful for increasing the overall length (which usually increases parallelism) of our loops, and will often help with memory locality.
+
+.. code :: c
+
+ #pragma acc parallel loop collapse(3) private(i,j,k,s0,ss) reduction(+:gosa)
+    for(i=1 ; i<imax-1 ; ++i)
+      for(j=1 ; j<jmax-1 ; ++j)
+        for(k=1 ; k<kmax-1 ; ++k){
+
+(refer to *examples/OpenACC/himeno/solution/C/himeno_C_v03.c*)
+
+.. code :: c
+
+ $ export PGI_ACC_TIME=1
+ $ cp himeno_C_v03.c himeno_C.c && make
+ $ sbatch run_himeno.sh
+  jacobi  NVIDIA  devicenum=0
+    time(us): 22,300
+    221: data region reached 4 times
+    226: compute region reached 1322 times
+        226: kernel launched 1322 times
+            grid: [65535]  block: [128]
+            elapsed time(us): total=4,012,812 max=30,035 min=2,960 avg=3,035
+        226: reduction kernel launched 1322 times
+            grid: [1]  block: [256]
+            elapsed time(us): total=128,708 max=138 min=95 avg=97
+    226: data region reached 2644 times
+        226: data copyin transfers: 1322
+             device time(us): total=6,627 max=10 min=5 avg=5
+        248: data copyout transfers: 1322
+             device time(us): total=15,673 max=94 min=10 avg=11
+    251: compute region reached 1322 times
+        251: kernel launched 1322 times
+            grid: [65535]  block: [128]
+ 
+Loop directives
+---------------
+
+- Loop directive accepts several fine-tuning clauses, OpenACC has three levels of parallelism
+
+ - ``gang`` -- have one or more workers that share resources, such as streaming multiprocessor - Multiple gangs work independently
+ - ``worker`` -- compute a vector
+ - ``vector`` -- threads work in SIMT (SIMD) fashion 
+ - ``seq`` -- run sequentially
+
+- Multiple levels can be applied to a loop nest, but they have to be applied in top-down order
+- By default, when programming for a GPU, gang and vector parallelism is automatically applied.
+
+.. image:: img/gang_worker_vector.png
+
+
+This image represents a single gang. When parallelizing our for loops, the loop iterations will be broken up evenly among a number of gangs. Each gang will contain a number of threads. These threads are organized into blocks. A worker is a row of threads. In the above graphic, there are 3 workers, which means that there are 3 rows of threads. The vector refers to how long each row is. So in the above graphic, the vector is 8, because each row is 8 threads long.
+
+
+.. code :: c
+
+ #pragma acc parallel num_gangs( 2 ) num_workers( 4 ) vector_length( 32 )
+ {
+    #pragma acc loop gang worker
+    for(int i = 0; i < N; i++)
+    {
+        #pragma acc loop vector
+        for(int j = 0; j < M; j++)
+        {
+            < loop code >
+        }
+    }
+ }
+
+- Avoid wasting Threads, when parallelizing small arrays, you have to be careful that the number of threads within your vector is not larger than the number of loop iterations.
+
+.. code :: c
+
+ #pragma acc kernels loop gang
+ for(int i = 0; i < 1000000000; i++)
+ {
+    #pragma acc loop vector(256)
+    for(int j = 0; j < 32; j++)
+    {
+        < loop code >
+    }
+ }
+
+- The Rule of 32 (Warps): The general rule of thumb for programming for NVIDIA GPUs is to always ensure that your vector length is a multiple of 32 (which means 32, 64, 96, 128, ... 512, ... 1024... etc.). This is because NVIDIA GPUs are optimized to use warps. Warps are groups of 32 threads that are executing the same computer instruction.
+
+(refer to *examples/OpenACC/MG/solution/C/MG/mg_v0[1-8].c*)
+
+What values should I try?
+-------------------------
+
+- Depends on the accelerator you are using
+- You can try out different combinations, but deterministic optimizations require good knowledge on the accelerator hardware
+
+  - In the case of NVIDIA GPUs you should start with the NVVP results and refer to CUDA documentation
+  - One hard-coded value: for NVIDIA GPUs the vector length should always be 32, which is the (current) warp size
+
+
+Device data interoperability
+----------------------------
+
+- OpenACC includes methods to access to device data pointers
+- Device data pointers can be used to interoperate with libraries and other programming techniques available for accelerator devices
+
+   -  CUDA kernels and libraries
+   -  CUDA-aware MPI libraries
+
+Calling CUDA-kernel from OpenACC-program
+----------------------------------------
+
+- Define a device address to be available on the host
+
+  -  C/C++: ``#pragma acc host_data [clause]``
+  -  Fortran: ``!$acc host_data [clause]``
+
+- Only a single clause is allowed: C/C++, Fortran: ``use_device(var-list)``
+- Within the construct, all the variables in var-list are referred to by using their device addresses
+
+.. code :: c
+
+ #pragma acc data present(u[0:n1*n2*n3],v[0:n1*n2*n3],a[0:4],r[0:n1*n2*n3])
+    {
+ #pragma acc host_data use_device(u,v,r,a)
+      {
+        resid_cuda(u,v,r,&n1,&n2,&n3,a);
+      }
+    }
+
+(refer to *examples/OpenACC/MG/solution/C/MG/mg_v08.c*)
+
+.. code :: c
+
+  extern "C" void resid_cuda(double *u, double *v, double *r,
+                             int *n1, int *n2, int *n3,
+                             double *a)
+ 
+(refer to *examples/OpenACC/MG/solution/C/MG/mg_kernels.cu*)
+
+Summary
+-------
+
+- Profiling is essential for optimization
+
+  - NVPROF and NVVP for NVIDIA platform
+
+- Data and Loop optimizations
