@@ -546,3 +546,9 @@ But since there are the threads that actually do the work, the inactive threads 
        Note that the shared memory array argument should have ``volatile`` qualifier to tell the compiler not to optimize the code.
        
     2. Reduce the number of iteration in the main kernel and call the new warp reduction function for the lase 32 values.`
+
+8. Further improvements
+-----------------------
+
+There is more one can do with the current code to get even better performance.
+Please, see `this excelent presentation <https://developer.download.nvidia.com/assets/cuda/files/reduction.pdf>`_ from Mark Harris (NVidia) for some ideas.

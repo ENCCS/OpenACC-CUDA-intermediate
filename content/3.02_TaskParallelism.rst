@@ -234,7 +234,7 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
     GPU runtime will overlap the submitted tasks to an extent that they do not interfere with each other.
 
 
-2. Introducing dependencies between kernels
+3. Introducing dependencies between kernels
 -------------------------------------------
 
 .. figure:: img/TaskParallelism/ENCCS-OpenACC-CUDA_TaskParallelism2_SchemeGPUDependency.png
@@ -242,6 +242,10 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
     :scale: 35 %
 
     Adding extra dependency between two tasks.
+
+Let us now consider a case, where there is an extra dependency between tasks.
+Assume that the ``func2(..)`` not needs a result of the ``func1(..)`` to be evaluated.
+This is easy to da in the synchronous version of the program.
 
 .. typealong:: Code with dependencies
 
@@ -262,12 +266,13 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
             .. literalinclude:: ../examples/CUDA/Async2/solution/async_gpu_1.cu
                 :language: CUDA
 
-    1. Change the thread indexing where to make sure that first threads are doing the reduction.
-       This is easier to do if one compute the index of the reduced value from the thread index.
+    Create the synchronos version of the GPU code with dependency.
+    Use GPU version of the code without dependencies as a starting point and a CPU version of the code with dependencies as a reference.
 
-
-3. Problem with running asynchronously
+4. Problem with running asynchronously
 --------------------------------------
+
+Let us now try to convert the code so it will run asynchronously as if there is no dependency between functions.
 
 .. typealong:: Problem with running asynchroneously
 
@@ -283,8 +288,22 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
             .. literalinclude:: ../examples/CUDA/Async2/solution/async_gpu_2.cu
                 :language: CUDA
 
-    1. Change the thread indexing where to make sure that first threads are doing the reduction.
-       This is easier to do if one compute the index of the reduced value from the thread index.
+    1. The CPU data needs to be pinned.
+       Change the allocation and release of the memory so that CUDA API calls to |cudaMallocHost| and |cudaFreeHost| are used.
+
+    2. Create two streams --- one for ``func1(..)`` and one for ``func2()``.
+
+    3. Change host to device and device to host data transfers from |cudaMemcpy| to |cudaMemcpyAsync|.
+       Use ``stream1`` for ``data1`` and ``stream2`` for ``data2``.
+       
+    4. Make the kernel launch asynchronous by adding streams as forth parameter to the kernel launch configurations.
+       You will also need to specify the shared memory size as the third parameter --- set it to zero.
+
+    5. Add |cudaDeviceSynchronize| call when all asynchronous API calls are made to make sure that everything is finished before the results are printed.
+
+As one can see, the resulting sum of the elements is now different.
+This happens because the evaluation of the ``func1(..)`` was not finished before the ``func2(..)`` call.
+So some values of the ``result`` were not updated for the ``func2(..)``.
 
 .. figure:: img/TaskParallelism/ENCCS-OpenACC-CUDA_TaskParallelism2_TimelineGPUAsync.png
     :align: center
@@ -292,7 +311,7 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
 
     Adding extra dependency between two tasks.
 
-3. Introducing dependencies between GPU tasks
+5. Introducing dependencies between GPU tasks
 ---------------------------------------------
 
 .. figure:: img/TaskParallelism/ENCCS-OpenACC-CUDA_TaskParallelism2_TimelineAsyncDependency.png
@@ -301,11 +320,20 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
 
     Adding extra dependency between two tasks.
 
+CUDA has a mechanism for introducing the explicit dependencies between streams, called events.
+First, one needs to create an |cudaEvent_t| object, which is done by the |cudaEventCreate| function.
+
 .. signature:: |cudaEventCreate|
     
     .. code-block:: CUDA
 
         __host__ ​cudaError_t cudaEventCreate(cudaEvent_t* event)
+
+This function will initialize its only argument.
+The events can only be created on host, since one does not need one for each GPU thread.
+As most of the CUDA API function, the return object can indicate that there was an error with the call.
+
+With event created, we need to be able to record and wait for it, which is done using following functions:
 
 .. signature:: |cudaEventRecord|
     
@@ -313,11 +341,23 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
 
         __host__​ __device__​ cudaError_t cudaEventRecord(cudaEvent_t event, cudaStream_t stream = 0)
 
+This will record an event in the provided stream.
+Having the event recorded allows the host to see at which point the stream execution currently is.
+The function can be called from both host and device.
+The later can be useful for complex GPU kernel, where the event can be marked earlier than the kernel is complete.
+Note that if stream is not specified, the event will be marked in the default stream.
+
+In order for another stream to wait until the event is recorded, one can use the followind function:
+
 .. signature:: |cudaStreamWaitEvent|
     
     .. code-block:: CUDA
 
         __host__​ __device__ ​cudaError_t cudaStreamWaitEvent(cudaStream_t stream, cudaEvent_t event, unsigned int flags = 0)
+
+This takes an event and stream as arguments.
+Calling this function will stop the execution in the provided stream until the event is recorded.
+For this to be useful, the stream should be diferent to the one where event was recorded.
 
 .. typealong:: Introducing dependencies
 
@@ -338,5 +378,24 @@ Hence, while the data is copied, GPU can execute the computational kernel withou
             .. literalinclude:: ../examples/CUDA/Async2/solution/async_gpu_4.cu
                 :language: CUDA
 
-    1. Change the thread indexing where to make sure that first threads are doing the reduction.
-       This is easier to do if one compute the index of the reduced value from the thread index.
+    The problem can be solved by adding an extra |cudaDeviceSynchronize| function call, but this approach is not very flexible.
+    For instance, it will not work if there another independent stream in the program.
+    Preferred approach is to add explicit dependencies with events.
+
+    1. Create and initialize an event.
+    
+    2. Record an event in ``stream1`` when ``func1(..)`` is evaluated.
+    
+    3. Wait for an event in ``stream2`` before starting evaluating ``func2(..)``.
+
+Inserting the dependency shoud fix the issue.
+
+6. Further information
+---------------------- 
+
+Setting up the dependencies so that the code performs at its best can be complicated.
+In CUDA, this can be done automatically with `CUDA Graphs <https://developer.nvidia.com/blog/cuda-graphs/>`_.
+CUDA Graphs allows one to record the sequence of API calls and merge them to improve the performance.
+
+Also, do not forget that the CPU is also very capable device that should not be idling while GPU computes.
+Likely, asynchronous API calls make it straightforward to use the CPU: the execution is returned to the host immediately after the GPU call.
