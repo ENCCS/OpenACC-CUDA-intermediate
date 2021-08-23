@@ -3,3 +3,5 @@
 /venv*
 .jupyter_cache
 jupyter_execute
+.vscode
+content/__pycache__
