@@ -24,15 +24,14 @@ __global__ void reduce_kernel(const float* data, float* result, int numElements)
     int s_i = threadIdx.x;
     int d_i = threadIdx.x + blockIdx.x*2*blockDim.x;
     s_data[s_i] = getValue(data, d_i, numElements) + getValue(data, d_i + blockDim.x, numElements);
-    __syncthreads();
     
     for (int offset = blockDim.x / 2; offset > 0; offset >>= 1)
     {
+        __syncthreads();
         if (s_i < offset)
         {
             s_data[s_i] += s_data[s_i + offset];
         }
-        __syncthreads();
     }
 
     if (s_i == 0)
