@@ -86,7 +86,7 @@ Let us start with exploring the data parallelism first.
     7. Compile the code with ``nvcc async_gpu_1.cu -o async_gpu_1``.
        Execute the program and make sure that the results are the same as in the CPU version.
 
-Although the evaluation of these fairly compute heavy kernels is noticeable quicker on a CPU, we still have the room for improvement.
+Although the evaluation of these fairly compute heavy kernels is noticeable quicker on a GPU, we still have the room for improvement.
 The current version of the program requests GPU to do the following workflow:
 
 .. figure:: img/TaskParallelism/ENCCS-OpenACC-CUDA_TaskParallelism_SchemeGPUSequential.png
@@ -185,7 +185,7 @@ The only difference is that it now takes one extra argument --- the stream in wh
 
 One last function that we are going to need is the blocking synchronization function.
 The calls to asynchronous functions return control back to the CPU right after the call, before the actual execution is completed.
-Hence, before the data is analyzed back on the CPU, we need to insure that all the calls we issued are completed.
+Hence, before the data is analyzed back on the CPU, we need to ensure that all the calls we issued are completed.
 This can be done with the following function from CUDA API:
 
 .. signature:: |cudaDeviceSynchronize|
